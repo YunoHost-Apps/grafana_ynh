@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# Treat unset variables as an error
+set -u
+
+# See comments in install script
+app=$YNH_APP_INSTANCE_NAME
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
+
+# Retrieve app settings
+domain=$(ynh_app_setting_get "$app" domain)
+
+# Stop services
+sudo systemctl stop grafana-server
+sudo systemctl stop influxdb
+
+# Remove app dependencies
+ynh_package_autoremove "influxdb-grafana-deps" || true
+# If packages deinstalled (weren't installed priorly to package installation)
+# purge remaining files
+if [[ -n "$(dpkg-query --status grafana | grep -E "Status|deinstall")" ]] ; then
+  sudo dpkg --purge grafana
+  sudo rm /etc/apt/sources.list.d/grafana_stable.list
+fi
+if [[ -n "$(dpkg-query --status influxdb | grep -E "Status|deinstall")" ]] ; then
+  sudo dpkg --purge influxdb
+  sudo rm /etc/apt/sources.list.d/influxdb.list
+fi
+
+# If NetData is installed, configure it not to feed InfluxDB any more
+netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
+if [[ -f "$netdata_conf" ]] ; then
+  sudo sed -i '/^\[backend\]$/,/^\[/ {
+    s/enabled = yes/# enabled = no/
+    s/type = opentsdb/# type = graphite/
+    s/destination = localhost:4242/# destination = localhost/
+    s/update every = 60/# update every = 10/ 
+  }' $netdata_conf
+fi
+
+# Remove nginx configuration file
+sudo rm -f /etc/nginx/conf.d/$domain.d/$app.conf
+sudo rm -rf /home/yunohost.app/$app
+
+# Drop MySQL database and user
+dbname=$app
+dbuser=$app
+ynh_mysql_drop_db "$dbname" || true
+ynh_mysql_drop_user "$dbuser" || true
+
+
+# Reload nginx service
+sudo service nginx reload
+
+

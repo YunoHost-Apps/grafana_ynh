@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+app=$YNH_APP_INSTANCE_NAME
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
+
+# Backup configuration files
+ynh_backup "/etc/influxdb" "conf_influxdb"
+ynh_backup "/etc/grafana" "conf_grafana"
+ynh_backup "/var/lib/grafana/plugins" "conf_grafana_plugins"
+
+# Backup InfluxDB data
+# Source: http://stackoverflow.com/questions/39501416/how-to-restore-data-base-using-influxd
+TMPDIR=$(mktemp -d)
+influx -database opentsdb -execute "show series" && sudo influxd backup -database opentsdb $TMPDIR
+ynh_backup "$TMPDIR" "influxdb_data"
+
+# Dump the Grafana database
+dbname=$app
+dbuser=$app
+dbpass=$(ynh_app_setting_get "$app" mysqlpwd)
+mysqldump -u "$dbuser" -p"$dbpass" --no-create-db "$dbname" > ./dump.sql
+
+# Copy NGINX configuration
+domain=$(ynh_app_setting_get "$app" domain)
+ynh_backup "/etc/nginx/conf.d/${domain}.d/${app}.conf" "nginx.conf"

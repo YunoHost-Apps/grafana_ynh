@@ -1,0 +1,179 @@
+#!/bin/bash
+
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+shopt -s extglob  # sets extended pattern matching options in the bash shell
+
+app=$YNH_APP_INSTANCE_NAME
+
+# Source local helpers
+source ./_common.sh
+
+# Retrieve arguments
+domain=$YNH_APP_ARG_DOMAIN
+path=$YNH_APP_ARG_PATH
+is_public=$YNH_APP_ARG_IS_PUBLIC
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
+
+# Fix path if needed
+path=$(fix_path $path)
+
+# Check domain/path availability
+sudo yunohost app checkurl "${domain}${path}" -a "$app" \
+    || ynh_die "Path not available: ${domain}${path}"
+
+# Save app settings
+ynh_app_setting_set "$app" is_public "$is_public"
+
+# Install needed dependency for HTTPS apt access
+# (that dependency could be handled upstream in YunoHost)
+ynh_package_install apt-transport-https
+
+# Test repository existence, in case of failed installation
+influxdb_repository_present=""
+grafana_repository_present=""
+[[ -f $INFLUXDB_REPOSITORY ]] && influxdb_repository_present="true"
+[[ -f $GRAFANA_REPOSITORY ]] && grafana_repository_present="true"
+
+# Install needed apt repository for InfluxDB
+curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
+source /etc/os-release
+test $VERSION_ID = "8" && echo "deb https://repos.influxdata.com/debian jessie stable" | sudo tee $INFLUXDB_REPOSITORY
+
+# Install needed apt repository for Grafana
+machine=$(uname -m)
+# Add the repos depending on processor architecture
+ if [[ "$machine" =~ "x86" ]]; then 
+  # x86 processor --> we use the official repository
+  curl -s https://packagecloud.io/install/repositories/grafana/stable/script.deb.sh | sudo bash
+elif [[ "$machine" =~ "armv6" ]] ; then
+  # For ARM, use fg2it repository
+  # https://github.com/fg2it/grafana-on-raspberry
+  curl https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
+  echo "deb http://dl.bintray.com/fg2it/deb-rpi-1b jessie main" | sudo tee $GRAFANA_REPOSITORY
+elif [[ "$machine" =~ "armv7" ]] ; then
+  curl https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
+  echo "deb http://dl.bintray.com/fg2it/deb jessie main" | sudo tee $GRAFANA_REPOSITORY
+fi
+
+# Install packages
+# We install them as dependencies as they may already be installed and used for other purposes
+ynh_package_install_from_equivs ../conf/influxdb-grafana-deps.control \
+|| {
+  # Remove apt repositories if they were added
+  [[ -n "$influxdb_repository_present" ]] && rm $INFLUXDB_REPOSITORY
+  [[ -n "$grafana_repository_present" ]] && rm $GRAFANA_REPOSITORY
+  ynh_die "Unable to install Debian packages"
+}
+# If NetData is installed, configure it to feed InfluxDB
+netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
+if [[ -f "$netdata_conf" ]] ; then
+  # If there is already a [backend] section
+  if [ -n "$(sudo cat $netdata_conf | grep '\[backend\]')" ] ; then
+    # These regexps replaces patterns inside ini [sections] ([backend] section, here)
+    sudo sed -i '/^\[backend\]$/,/^\[/ {
+      s/# enabled = no/enabled = yes/
+      s/# type = graphite/type = opentsdb/
+      s/# destination = localhost/destination = localhost:4242/
+      s/# update every = 10/update every = 60/      
+    }' $netdata_conf
+  else
+    # Otherwise create the section
+    echo "[backend]
+enabled = yes
+type = opentsdb
+destination = localhost:4242" | sudo tee -a $netdata_conf
+  fi
+  
+  # Restart NetData
+  sudo systemctl restart netdata
+fi
+
+# Generate MySQL password and create database
+dbuser=$app
+dbname=$app
+dbpass=$(ynh_string_random 12)
+ynh_app_setting_set "$app" mysqlpwd "$dbpass"
+ynh_mysql_create_db "$dbname" "$dbuser" "$dbpass"
+
+# Configure InfluxDB
+if [ -f /etc/influxdb/influxdb.conf ] ; then
+  sudo sed -i '/^\[\[opentsdb\]\]$/,/^\[/ s/# enabled = false/enabled = true/' /etc/influxdb/influxdb.conf
+else
+  [ -d /etc/influxdb ] || sudo mkdir /etc/influxdb
+  sudo cp ../conf/influxdb.conf /etc/influxdb
+fi
+
+# Start InfluxDB server
+sudo systemctl start influxdb
+
+# Configure Grafana
+sudo cp ../conf/ldap.toml /etc/grafana
+
+grafana_conf="/etc/grafana/grafana.ini"
+# Set final URL
+sudo sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = https://$domain$path@" $grafana_conf
+# Disable check for updates
+sudo sed -i '/^\[analytics\]$/,/^\[/ s/;check_for_updates = .*/check_for_updates = false/' $grafana_conf
+# Enable HTTP and LDAP authentication
+sudo sed -i '/^\[auth.basic\]$/,/^\[/ s/;enabled = .*/enabled = false/' $grafana_conf
+sudo sed -i '/^\[auth.proxy\]$/,/^\[/ s/;enabled = .*/enabled = true/' $grafana_conf
+sudo sed -i '/^\[auth.ldap\]$/,/^\[/ {
+  s/;enabled = .*/enabled = true/
+  s/;allow_sign_up = .*/allow_sign_up = true/
+}' $grafana_conf
+# Set log level to debug
+sudo sed -i '/^\[log\]$/,/^\[/ s/;level = .*/level = debug/' $grafana_conf
+
+# Change URL and database credentials
+sudo sed -i "/^\[database\]$/,/^\[/ {
+  s/;type = .*/type = mysql/
+  s/;name = .*/name = $dbname/
+  s/;user = .*/user = $dbuser/
+  s/;password =.*/password = $dbpass/
+}" $grafana_conf
+
+# Restart grafana server
+sudo systemctl restart grafana-server
+
+# Wait for Grafana to start and initialize database
+while [ -z "$(sudo netstat -lnput|grep grafana)" ] ; do
+  sleep 5s
+done
+
+# Import default dashboard for NetData
+hostname=$(hostname)
+sed -i "s@yunohost.yunohost.org@$hostname@g" ../conf/grafana_init_data.sql
+mysql -u $dbuser -p$dbpass $dbname < ../conf/grafana_init_data.sql
+# Restart grafana server to take db change into account
+sudo systemctl restart grafana-server
+
+# Enable the systemd service so that InfluxDB and Grafana start at boot
+sudo systemctl enable influxdb.service
+sudo systemctl enable grafana-server.service
+
+# Store useful files for backup/restore scripts
+sudo cp _common.sh /etc/grafana
+sudo cp ../conf/influxdb-grafana-deps.control /etc/grafana
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+if [[ "$path" == "/" ]] ; then
+  nginx_conf=../conf/nginx_root.conf
+else
+  nginx_conf=../conf/nginx_sub_dir.conf
+fi
+
+sed -i "s@YNH_WWW_PATH@$path@g" $nginx_conf
+sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+# If app is public, add url to SSOWat conf as skipped_uris
+if [[ $is_public -eq 1 ]]; then
+  # unprotected_uris allows SSO credentials to be passed anyway.
+  ynh_app_setting_set "$app" unprotected_uris "/"
+fi
+
+# Reload services
+sudo service nginx reload

@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+shopt -s extglob  # sets extended pattern matching options in the bash shell
+
+app=$YNH_APP_INSTANCE_NAME
+
+# Source local helpers
+source ./_common.sh
+SRCPATH=$(pwd)
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
+
+# Retrieve app settings
+domain=$(ynh_app_setting_get "$app" domain)
+path=$(ynh_app_setting_get "$app" path)
+is_public=$(ynh_app_setting_get "$app" is_public)
+
+# Fix path if needed
+path=$(fix_path $path)
+
+# There's currently nothing else to upgrade than packaging files
+# as InfluxDB/Grafana updates are managed through APT
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+if [[ "$path" == "/" ]] ; then
+  nginx_conf=$SRCPATH/../conf/nginx_root.conf
+else
+  nginx_conf=$SRCPATH/../conf/nginx_sub_dir.conf
+fi
+
+sed -i "s@YNH_WWW_PATH@${path}@g" $nginx_conf
+sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+# If app is public, add url to SSOWat conf as skipped_uris
+if [[ $is_public -eq 1 ]]; then
+  # See install script
+  ynh_app_setting_set "$app" unprotected_uris "/"
+fi
+
+# Reload nginx service
+sudo service nginx reload

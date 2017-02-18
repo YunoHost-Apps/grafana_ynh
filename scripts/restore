@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# Exit on command errors and treat unset variables as an error
+set -eu
+
+app=$YNH_APP_INSTANCE_NAME
+
+# Source YunoHost helpers
+source /usr/share/yunohost/helpers
+
+# Retrieve old app settings
+domain=$(ynh_app_setting_get "$app" domain)
+path=$(ynh_app_setting_get "$app" path)
+
+# Fix permissions
+sudo chmod a+rx ./conf_grafana/_common.sh
+sudo chmod a+r ./conf_grafana/influxdb-grafana-deps.control
+
+# Source local helpers
+source ./conf_grafana/_common.sh
+SRCPATH=$(pwd)
+
+# Fix path if needed
+path=$(fix_path $path)
+
+# Check domain/path availability
+sudo yunohost app checkurl "${domain}${path}" -a "$app" \
+    || ynh_die "Path not available: ${domain}${path}"
+
+# Install needed dependency for HTTPS apt access
+# (that dependency could be handled upstream in YunoHost)
+ynh_package_install apt-transport-https
+
+# Install needed apt repository for InfluxDB
+curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
+source /etc/os-release
+test $VERSION_ID = "8" && echo "deb https://repos.influxdata.com/debian jessie stable" | sudo tee $INFLUXDB_REPOSITORY
+
+# Install needed apt repository for Grafana
+machine=$(uname -m)
+# Add the repos depending on processor architecture
+ if [[ "$machine" =~ "x86" ]]; then 
+  # x86 processor --> we use the official repository
+  curl -s https://packagecloud.io/install/repositories/grafana/stable/script.deb.sh | sudo bash
+elif [[ "$machine" =~ "armv6" ]] ; then
+  # For ARM, use fg2it repository
+  # https://github.com/fg2it/grafana-on-raspberry
+  curl https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
+  echo "deb http://dl.bintray.com/fg2it/deb-rpi-1b jessie main" | sudo tee $GRAFANA_REPOSITORY
+elif [[ "$machine" =~ "armv7" ]] ; then
+  curl https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
+  echo "deb http://dl.bintray.com/fg2it/deb jessie main" | sudo tee $GRAFANA_REPOSITORY
+fi
+
+# Install packages
+# We install them as dependencies as they may already be installed and used for other purposes
+ynh_package_install_from_equivs ./conf_grafana/influxdb-grafana-deps.control \
+|| ynh_die "Unable to install Debian packages"
+
+# Create and restore Grafana database
+dbname=$app
+dbuser=$app
+dbpass=$(ynh_app_setting_get "$app" mysqlpwd)
+ynh_mysql_create_db "$dbname" "$dbuser" "$dbpass"
+ynh_mysql_connect_as "$dbuser" "$dbpass" "$dbname" < ./dump.sql
+
+# Restore InfluxDB data (only if backup not empty)
+# That happens when passing automated tests (NetData not present)
+if [ "$(ls -A $SRCPATH/influxdb_data)" ] ; then
+  sudo influxd restore -metadir /var/lib/influxdb/meta $SRCPATH/influxdb_data
+  sudo influxd restore -database opentsdb -datadir /var/lib/influxdb/data $SRCPATH/influxdb_data
+fi
+# Restore configuration files
+sudo cp -a $SRCPATH/conf_influxdb/* /etc/influxdb
+sudo cp -a $SRCPATH/conf_grafana/* /etc/grafana
+[ "$(sudo ls -A $SRCPATH/conf_grafana_plugins)" ] && sudo cp -a $SRCPATH/conf_grafana_plugins/* /var/lib/grafana/plugins
+
+# Start InfluxDB server
+sudo systemctl start influxdb
+
+# Restart grafana server
+sudo systemctl restart grafana-server
+
+# Restart NetData if present
+sudo systemctl restart netdata || true
+
+# Restore NGINX configuration
+sudo cp -a $SRCPATH/nginx.conf "/etc/nginx/conf.d/${domain}.d/${app}.conf"
+
+# Restart webserver
+sudo service nginx reload
