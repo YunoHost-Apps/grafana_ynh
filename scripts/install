@@ -120,6 +120,8 @@ grafana_conf="/etc/grafana/grafana.ini"
 sudo sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = https://$domain$path@" $grafana_conf
 # Disable check for updates
 sudo sed -i '/^\[analytics\]$/,/^\[/ s/;check_for_updates = .*/check_for_updates = false/' $grafana_conf
+# Disable organization creation
+sudo sed -i '/^\[users\]$/,/^\[/ s/;allow_org_create = .*/allow_org_create = false/' $grafana_conf
 # Enable HTTP and LDAP authentication
 sudo sed -i '/^\[auth.basic\]$/,/^\[/ s/;enabled = .*/enabled = false/' $grafana_conf
 sudo sed -i '/^\[auth.proxy\]$/,/^\[/ s/;enabled = .*/enabled = true/' $grafana_conf

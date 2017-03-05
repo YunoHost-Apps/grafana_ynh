@@ -14,8 +14,10 @@ Note: You can use it without NetData, but you'll have to install a collection ap
 
 **Don't hesitate to create new dashboards**: the default dashboard contains metrics from NetData, but only generic ones that are generated on every machine. NetData dynamically detects services and applications (e.g.redis, nginx, etc.) and enriches its dashboard and generated metrics. Many NetData metrics don't appear in the provided default Grafana dashboard!
 
-**Warning**: The default dashboard may be updated in a further release of this package, so please make sure you create your own dashboards!
+**Warnings**:
 
+* The default dashboard may be updated in a further release of this package, so please make sure you create your own dashboards!
+* Organizations creation doesn't play well with LDAP integration; it is disabled for standard users, but can't be disabled for administrators: **please do not create organizations**!
 
 ---
 # Package description:
