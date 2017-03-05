@@ -13,6 +13,7 @@ source ./_common.sh
 # Retrieve arguments
 domain=$YNH_APP_ARG_DOMAIN
 path=$YNH_APP_ARG_PATH
+admin=$YNH_APP_ARG_ADMIN
 is_public=$YNH_APP_ARG_IS_PUBLIC
 
 # Source YunoHost helpers
@@ -26,6 +27,7 @@ sudo yunohost app checkurl "${domain}${path}" -a "$app" \
     || ynh_die "Path not available: ${domain}${path}"
 
 # Save app settings
+ynh_app_setting_set "$app" admin "$admin"
 ynh_app_setting_set "$app" is_public "$is_public"
 
 # Install needed dependency for HTTPS apt access
@@ -144,10 +146,15 @@ while [ -z "$(sudo netstat -lnput|grep grafana)" ] ; do
   sleep 5s
 done
 
+# Change admin name to the specified one
+mail=$(ynh_user_get_info "$admin" 'mail')
+ynh_mysql_connect_as $dbuser $dbpass $dbname <<< "UPDATE user SET login=\"$admin\", email=\"$mail\" WHERE login=\"admin\";"
+
 # Import default dashboard for NetData
 hostname=$(hostname)
 sed -i "s@yunohost.yunohost.org@$hostname@g" ../conf/grafana_init_data.sql
-mysql -u $dbuser -p$dbpass $dbname < ../conf/grafana_init_data.sql
+ynh_mysql_connect_as $dbuser $dbpass $dbname < ../conf/grafana_init_data.sql
+
 # Restart grafana server to take db change into account
 sudo systemctl restart grafana-server
 

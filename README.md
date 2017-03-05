@@ -1,7 +1,9 @@
 Grafana for YunoHost
 -----------------------------
 
-**Important: This package is designed to be fed by the NetData application for monitoring measures, so please make sure the YunoHost NetData package is installed before installing it!**
+**Important: This package is designed to be fed by the NetData application for monitoring measures, so please make sure the YunoHost [NetData package](https://github.com/YunoHost-Apps/netdata_ynh/) is installed before installing it!**
+
+NetData only collects, displays and sets alarms based on data from the last hour; this packages allows to archive every metrics and put up statistics and dashboards on the long term.
 
 Note: You can use it without NetData, but you'll have to install a collection application (e.g. collectd) to gather data.
 
@@ -18,7 +20,7 @@ Note: You can use it without NetData, but you'll have to install a collection ap
 ---
 # Package description:
 
-* installs InfluxDB as timeseries database
+* installs InfluxDB as time series database
 * if the NetData package is installed, configures NetData to feed InfluxDB every minute
 * installs Grafana as dashboard server
 * creates a Grafana Data Source to fetch data from InfluxDB (and hence NetData!)
