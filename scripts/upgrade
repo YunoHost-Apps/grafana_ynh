@@ -42,4 +42,4 @@ if [[ $is_public -eq 1 ]]; then
 fi
 
 # Reload nginx service
-sudo service nginx reload
+sudo systemctl reload nginx

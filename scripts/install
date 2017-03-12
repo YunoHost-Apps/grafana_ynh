@@ -30,46 +30,9 @@ sudo yunohost app checkurl "${domain}${path}" -a "$app" \
 ynh_app_setting_set "$app" admin "$admin"
 ynh_app_setting_set "$app" is_public "$is_public"
 
-# Install needed dependency for HTTPS apt access
-# (that dependency could be handled upstream in YunoHost)
-ynh_package_install apt-transport-https
+# Install dependencies
+install_dependencies
 
-# Test repository existence, in case of failed installation
-influxdb_repository_present=""
-grafana_repository_present=""
-[[ -f $INFLUXDB_REPOSITORY ]] && influxdb_repository_present="true"
-[[ -f $GRAFANA_REPOSITORY ]] && grafana_repository_present="true"
-
-# Install needed apt repository for InfluxDB
-curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
-source /etc/os-release
-test $VERSION_ID = "8" && echo "deb https://repos.influxdata.com/debian jessie stable" | sudo tee $INFLUXDB_REPOSITORY
-
-# Install needed apt repository for Grafana
-machine=$(uname -m)
-# Add the repos depending on processor architecture
- if [[ "$machine" =~ "x86" ]]; then 
-  # x86 processor --> we use the official repository
-  curl -s https://packagecloud.io/install/repositories/grafana/stable/script.deb.sh | sudo bash
-elif [[ "$machine" =~ "armv6" ]] ; then
-  # For ARM, use fg2it repository
-  # https://github.com/fg2it/grafana-on-raspberry
-  curl https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
-  echo "deb http://dl.bintray.com/fg2it/deb-rpi-1b jessie main" | sudo tee $GRAFANA_REPOSITORY
-elif [[ "$machine" =~ "armv7" ]] ; then
-  curl https://bintray.com/user/downloadSubjectPublicKey?username=bintray | sudo apt-key add -
-  echo "deb http://dl.bintray.com/fg2it/deb jessie main" | sudo tee $GRAFANA_REPOSITORY
-fi
-
-# Install packages
-# We install them as dependencies as they may already be installed and used for other purposes
-ynh_package_install_from_equivs ../conf/influxdb-grafana-deps.control \
-|| {
-  # Remove apt repositories if they were added
-  [[ -n "$influxdb_repository_present" ]] && rm $INFLUXDB_REPOSITORY
-  [[ -n "$grafana_repository_present" ]] && rm $GRAFANA_REPOSITORY
-  ynh_die "Unable to install Debian packages"
-}
 # If NetData is installed, configure it to feed InfluxDB
 netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
 if [[ -f "$netdata_conf" ]] ; then
@@ -166,7 +129,6 @@ sudo systemctl enable grafana-server.service
 
 # Store useful files for backup/restore scripts
 sudo cp _common.sh /etc/grafana
-sudo cp ../conf/influxdb-grafana-deps.control /etc/grafana
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 if [[ "$path" == "/" ]] ; then
@@ -185,4 +147,4 @@ if [[ $is_public -eq 1 ]]; then
 fi
 
 # Reload services
-sudo service nginx reload
+sudo systemctl reload nginx

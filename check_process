@@ -26,8 +26,10 @@
 	Level 1=auto
 	Level 2=auto
 	Level 3=auto
-	Level 4=0
-  Level 5=0
+# https://github.com/YunoHost-Apps/grafana_ynh/issues/4
+	Level 4=1
+# https://github.com/YunoHost-Apps/grafana_ynh/issues/5
+  Level 5=1
 	Level 6=auto
 	Level 7=auto
 	Level 8=0

@@ -6,6 +6,9 @@ set -u
 # See comments in install script
 app=$YNH_APP_INSTANCE_NAME
 
+# Source local helpers
+source ./_common.sh
+
 # Source YunoHost helpers
 source /usr/share/yunohost/helpers
 
@@ -17,7 +20,10 @@ sudo systemctl stop grafana-server
 sudo systemctl stop influxdb
 
 # Remove app dependencies
+ynh_remove_app_dependencies || true
+# We keep this second removal for backward compatibility
 ynh_package_autoremove "influxdb-grafana-deps" || true
+
 # If packages deinstalled (weren't installed priorly to package installation)
 # purge remaining files
 if [[ -n "$(dpkg-query --status grafana | grep -E "Status|deinstall")" ]] ; then
@@ -52,6 +58,6 @@ ynh_mysql_drop_user "$dbuser" || true
 
 
 # Reload nginx service
-sudo service nginx reload
+sudo systemctl reload nginx
 
 
