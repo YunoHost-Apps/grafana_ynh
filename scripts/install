@@ -80,6 +80,8 @@ sudo cp ../conf/ldap.toml /etc/grafana
 
 grafana_conf="/etc/grafana/grafana.ini"
 # Set final URL
+sudo sed -i '/^\[server\]$/,/^\[/ s/;http_port = .*/root_url = 5000/' $grafana_conf
+# Set final URL
 sudo sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = https://$domain$path@" $grafana_conf
 # Disable check for updates
 sudo sed -i '/^\[analytics\]$/,/^\[/ s/;check_for_updates = .*/check_for_updates = false/' $grafana_conf
