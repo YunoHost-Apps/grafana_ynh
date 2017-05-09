@@ -13,7 +13,7 @@ source ./_common.sh
 # Retrieve arguments
 domain=$YNH_APP_ARG_DOMAIN
 path=$YNH_APP_ARG_PATH
-port=$YNH_APP_ARG_PORT
+port=$(ynh_find_port $YNH_APP_ARG_PORT)
 admin=$YNH_APP_ARG_ADMIN
 is_public=$YNH_APP_ARG_IS_PUBLIC
 
