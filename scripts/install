@@ -13,6 +13,7 @@ source ./_common.sh
 # Retrieve arguments
 domain=$YNH_APP_ARG_DOMAIN
 path=$YNH_APP_ARG_PATH
+port=$(ynh_find_port $YNH_APP_ARG_PORT)
 admin=$YNH_APP_ARG_ADMIN
 is_public=$YNH_APP_ARG_IS_PUBLIC
 
@@ -79,6 +80,8 @@ sudo systemctl start influxdb
 sudo cp ../conf/ldap.toml /etc/grafana
 
 grafana_conf="/etc/grafana/grafana.ini"
+# Set final port
+sudo sed -i "/^\[server\]$/,/^\[/ s@;http_port = .*@http_port = $port@" $grafana_conf
 # Set final URL
 sudo sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = https://$domain$path@" $grafana_conf
 # Disable check for updates
@@ -138,6 +141,7 @@ else
 fi
 
 sed -i "s@YNH_WWW_PATH@$path@g" $nginx_conf
+sed -i "s@YNH_WWW_PORT@$port@g" $nginx_conf
 sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # If app is public, add url to SSOWat conf as skipped_uris

@@ -103,3 +103,19 @@ ynh_remove_app_dependencies () {
     dep_app=${app//_/-}	# Replace all '_' by '-'
     ynh_package_autoremove ${dep_app}-ynh-deps	# Remove the fake package and its dependencies if they not still used.
 }
+
+# Find a free port and return it
+#
+# example: port=$(ynh_find_port 8080)
+#
+# usage: ynh_find_port begin_port
+# | arg: begin_port - port to start to search
+ynh_find_port () {
+	port=$1
+	test -n "$port" || ynh_die "The argument of ynh_find_port must be a valid port."
+	while netcat -z 127.0.0.1 $port       # Check if the port is free
+	do
+		port=$((port+1))	# Else, pass to next port
+	done
+	echo $port
+}
