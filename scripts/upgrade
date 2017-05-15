@@ -18,6 +18,13 @@ source /usr/share/yunohost/helpers
 domain=$(ynh_app_setting_get "$app" domain)
 path=$(ynh_app_setting_get "$app" path)
 is_public=$(ynh_app_setting_get "$app" is_public)
+port=$(ynh_app_setting_get "$app" port)
+
+# test port settings
+if [[ "$port" = "" ]]; then
+    port=3000
+    ynh_app_setting_set $app port $port
+fi
 
 # Fix path if needed
 path=$(fix_path $path)
@@ -33,6 +40,7 @@ else
 fi
 
 sed -i "s@YNH_WWW_PATH@${path}@g" $nginx_conf
+sed -i "s@YNH_WWW_PORT@$port@g" $nginx_conf
 sudo cp $nginx_conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # If app is public, add url to SSOWat conf as skipped_uris
