@@ -33,7 +33,7 @@ path=$(fix_path $path)
 # as InfluxDB/Grafana updates are managed through APT
 
 # Restart service
-systemctl restart grafana-server
+sudo systemctl restart grafana-server
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 if [[ "$path" == "/" ]] ; then
