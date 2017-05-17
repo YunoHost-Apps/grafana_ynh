@@ -32,6 +32,9 @@ path=$(fix_path $path)
 # There's currently nothing else to upgrade than packaging files
 # as InfluxDB/Grafana updates are managed through APT
 
+# Restart service
+systemctl restart grafana-server
+
 # Modify Nginx configuration file and copy it to Nginx conf directory
 if [[ "$path" == "/" ]] ; then
   nginx_conf=$SRCPATH/../conf/nginx_root.conf
