@@ -21,7 +21,7 @@ is_public=$(ynh_app_setting_get "$app" is_public)
 port=$(ynh_app_setting_get "$app" port)
 
 # test port settings
-if [[ "$port" = "" ]]; then
+if [[ -z "$port" ]]; then
     port=3000
     ynh_app_setting_set $app port $port
 fi
