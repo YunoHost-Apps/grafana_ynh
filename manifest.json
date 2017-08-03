@@ -43,6 +43,15 @@
                 "example": "/grafana",
                 "default": "/grafana"
             },
+	    {
+                "name": "port",
+                "ask": {
+                    "en": "Choose a port for your server. Let as default if you don't want to change it",
+                    "fr": "Entrez un port pour votre serveur. Laissez par défaut si vous ne voulez pas en changer"
+                },
+                "example": "3000",
+                "default": "3000"
+	    },
             {
                 "name": "admin",
                 "type": "user",
