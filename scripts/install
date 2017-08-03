@@ -108,7 +108,7 @@ sudo sed -i "/^\[database\]$/,/^\[/ {
   s/;type = .*/type = mysql/
   s/;name = .*/name = $dbname/
   s/;user = .*/user = $dbuser/
-  s/;password =.*/password = $dbpass/
+  s/;\?password =.*/password = $dbpass/
 }" $grafana_conf
 
 # Restart grafana server
