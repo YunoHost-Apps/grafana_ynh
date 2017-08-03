@@ -13,7 +13,7 @@ domain=$(ynh_app_setting_get "$app" domain)
 path=$(ynh_app_setting_get "$app" path)
 
 # Fix permissions
-sudo chmod a+rx ./conf_grafana/_common.sh
+sudo chmod a+r ./conf_grafana/_common.sh
 
 # Source local helpers
 source ./conf_grafana/_common.sh

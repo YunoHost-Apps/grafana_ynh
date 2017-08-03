@@ -33,6 +33,10 @@ ynh_app_setting_set "$app" is_public "$is_public"
 # Install dependencies
 install_dependencies
 
+# Declare services for YunoHost monitoring
+sudo yunohost service add influxdb
+sudo yunohost service add grafana-server --log "/var/log/grafana/grafana.log"
+
 # If NetData is installed, configure it to feed InfluxDB
 netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
 if [[ -f "$netdata_conf" ]] ; then

@@ -35,6 +35,10 @@ if [[ -n "$(dpkg-query --status influxdb | grep -E "Status|deinstall")" ]] ; the
   sudo rm /etc/apt/sources.list.d/influxdb.list
 fi
 
+# Remove services from YunoHost monitoring
+sudo yunohost service remove influxdb
+sudo yunohost service remove grafana-server
+
 # If NetData is installed, configure it not to feed InfluxDB any more
 netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
 if [[ -f "$netdata_conf" ]] ; then
