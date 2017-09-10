@@ -1,5 +1,8 @@
 Grafana for YunoHost
 -----------------------------
+[![Install Grafana with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=grafana)
+
+[![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://ci-apps.yunohost.org/jenkins/job/grafana%20%28Community%29/lastBuild/consoleFull)
 
 **Important: This package is designed to be fed by the NetData application for monitoring measures, so please make sure the YunoHost [NetData package](https://github.com/YunoHost-Apps/netdata_ynh/) is installed before installing it!**
 
