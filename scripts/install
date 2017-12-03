@@ -1,14 +1,27 @@
 #!/bin/bash
 
-# Exit on command errors and treat unset variables as an error
-set -eu
-
 shopt -s extglob  # sets extended pattern matching options in the bash shell
 
-app=$YNH_APP_INSTANCE_NAME
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
 
-# Source local helpers
-source ./_common.sh
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+ynh_abort_if_errors	# Stop script if an error is detected
+
+#=================================================
+# RETRIEVE ARGUMENTS FROM THE MANIFEST
+#=================================================
+
+app=$YNH_APP_INSTANCE_NAME
 
 # Retrieve arguments
 domain=$YNH_APP_ARG_DOMAIN

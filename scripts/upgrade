@@ -29,6 +29,18 @@ fi
 # Fix path if needed
 path=$(fix_path $path)
 
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+# Use prior backup and restore on error only if backup feature
+# exists on installed instance
+ynh_backup_before_upgrade # Backup the current version of the app
+ynh_clean_setup () {
+    ynh_restore_upgradebackup
+}
+ynh_abort_if_errors	# Stop script if an error is detected
+
 # There's currently nothing else to upgrade than packaging files
 # as InfluxDB/Grafana updates are managed through APT
 

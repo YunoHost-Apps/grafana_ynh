@@ -57,7 +57,7 @@ install_dependencies() {
 
   # Install packages
   # We install them as dependencies as they may already be installed and used for other purposes
-  ynh_app_dependencies influxdb, grafana \
+  ynh_install_app_dependencies influxdb, grafana \
   || {
     # Remove apt repositories if they were added
     [[ -n "$influxdb_repository_present" ]] && sudo rm $INFLUXDB_REPOSITORY
@@ -66,56 +66,15 @@ install_dependencies() {
   }
 }
 
-
 # ======== Future YunoHost helpers ========
-# Install dependencies with a equivs control file
-#
-# usage: ynh_app_dependencies dep [dep [...]]
-# | arg: dep - the package name to install in dependence
-ynh_app_dependencies () {
-    dependencies=$@
-    manifest_path="../manifest.json"
-    if [ ! -e "$manifest_path" ]; then
-    	manifest_path="../settings/manifest.json"	# Into the restore script, the manifest is not at the same place
-    fi
-    version=$(sudo python3 -c "import sys, json;print(json.load(open(\"$manifest_path\"))['version'])")	# Retrieve the version number in the manifest file.
-    dep_app=${app//_/-}	# Replace all '_' by '-'
-    cat > ./${dep_app}-ynh-deps.control << EOF	# Make a control file for equivs-build
-Section: misc
-Priority: optional
-Package: ${dep_app}-ynh-deps
-Version: ${version}
-Depends: ${dependencies// /, }
-Architecture: all
-Description: Fake package for ${app} (YunoHost app) dependencies
- This meta-package is only responsible of installing its dependencies.
-EOF
-    ynh_package_install_from_equivs ./${dep_app}-ynh-deps.control \
-        || ynh_die "Unable to install dependencies"	# Install the fake package and its dependencies
-}
 
-# Remove fake package and its dependencies
+# Delete a file checksum from the app settings
 #
-# Dependencies will removed only if no other package need them.
+# $app should be defined when calling this helper
 #
-# usage: ynh_remove_app_dependencies
-ynh_remove_app_dependencies () {
-    dep_app=${app//_/-}	# Replace all '_' by '-'
-    ynh_package_autoremove ${dep_app}-ynh-deps	# Remove the fake package and its dependencies if they not still used.
-}
-
-# Find a free port and return it
-#
-# example: port=$(ynh_find_port 8080)
-#
-# usage: ynh_find_port begin_port
-# | arg: begin_port - port to start to search
-ynh_find_port () {
-	port=$1
-	test -n "$port" || ynh_die "The argument of ynh_find_port must be a valid port."
-	while netcat -z 127.0.0.1 $port       # Check if the port is free
-	do
-		port=$((port+1))	# Else, pass to next port
-	done
-	echo $port
+# usage: ynh_remove_file_checksum file
+# | arg: file - The file for which the checksum will be deleted
+ynh_delete_file_checksum () {
+	local checksum_setting_name=checksum_${1//[\/ ]/_}	# Replace all '/' and ' ' by '_'
+	ynh_app_setting_delete $app $checksum_setting_name
 }

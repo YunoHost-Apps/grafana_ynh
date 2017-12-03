@@ -1,7 +1,17 @@
 #!/bin/bash
 
-# Treat unset variables as an error
-set -u
+#=================================================
+# GENERIC STARTING
+#=================================================
+# IMPORT GENERIC HELPERS
+#=================================================
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
 
 # See comments in install script
 app=$YNH_APP_INSTANCE_NAME
