@@ -6,7 +6,7 @@
         "en": "Beautiful metric & analytic dashboards for monitoring",
         "fr": "Tableaux de bords de supervision"
     },
-    "version": "1.0.0",
+    "version": "1.1.0~ynh1",
     "license": "Apache-2.0",
     "url": "http://grafana.org/",
     "maintainer": {
