@@ -62,7 +62,7 @@ if [[ -f "$netdata_conf" ]] ; then
       s/# enabled = no/enabled = yes/
       s/# type = graphite/type = opentsdb/
       s/# destination = localhost/destination = localhost:4242/
-      s/# update every = 10/update every = 60/      
+      s/# update every = 10/update every = 60/
     }' $netdata_conf
   else
     # Otherwise create the section
@@ -71,7 +71,7 @@ enabled = yes
 type = opentsdb
 destination = localhost:4242" | sudo tee -a $netdata_conf
   fi
-  
+
   # Restart NetData
   sudo systemctl restart netdata
 fi
@@ -85,14 +85,14 @@ ynh_mysql_create_db "$dbname" "$dbuser" "$dbpass"
 
 # Configure InfluxDB
 if [ -f /etc/influxdb/influxdb.conf ] ; then
-  sudo sed -i '/^\[\[opentsdb\]\]$/,/^\[/ s/# enabled = false/enabled = true/' /etc/influxdb/influxdb.conf
+  sudo sed -i '/^\[\[opentsdb\]\]$/,/^\[/ s/enabled = false/enabled = true/' /etc/influxdb/influxdb.conf
 else
   [ -d /etc/influxdb ] || sudo mkdir /etc/influxdb
   sudo cp ../conf/influxdb.conf /etc/influxdb
 fi
 
 # Start InfluxDB server
-sudo systemctl start influxdb
+sudo systemctl restart influxdb
 
 # Configure Grafana
 sudo cp ../conf/ldap.toml /etc/grafana
