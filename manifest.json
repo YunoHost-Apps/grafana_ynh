@@ -6,7 +6,7 @@
         "en": "Beautiful metric & analytic dashboards for monitoring",
         "fr": "Tableaux de bords de supervision"
     },
-    "version": "1.1.0~ynh1",
+    "version": "1.2.0~ynh1",
     "license": "Apache-2.0",
     "url": "http://grafana.org/",
     "maintainer": {
@@ -15,12 +15,12 @@
         "url": ""
     },
     "requirements": {
-    "yunohost": ">= 2.7.2"
+    "yunohost": ">= 3.0.0"
     },
     "multi_instance": false,
     "services": [
         "nginx",
-        "php5-fpm"
+        "php7.0-fpm"
     ],
     "arguments": {
         "install" : [

@@ -35,7 +35,7 @@ ynh_backup "/var/lib/grafana/plugins" "conf_grafana_plugins"
 # Backup InfluxDB data
 # Source: http://stackoverflow.com/questions/39501416/how-to-restore-data-base-using-influxd
 TMPDIR=$(mktemp -d)
-influx -database opentsdb -execute "show series" && sudo influxd backup -database opentsdb $TMPDIR
+influxd backup -database opentsdb $TMPDIR
 ynh_backup "$TMPDIR" "influxdb_data"
 
 # Dump the Grafana database

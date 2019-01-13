@@ -100,8 +100,10 @@ sudo cp ../conf/ldap.toml /etc/grafana
 grafana_conf="/etc/grafana/grafana.ini"
 # Set final port
 sudo sed -i "/^\[server\]$/,/^\[/ s@;http_port = .*@http_port = $port@" $grafana_conf
+# Set domain
+sudo sed -i "/^\[server\]$/,/^\[/ s@;domain = .*@domain = $domain@" $grafana_conf
 # Set final URL
-sudo sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = https://$domain$path@" $grafana_conf
+sudo sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = %(protocol)s://%(domain)s$path@" $grafana_conf
 # Disable check for updates
 sudo sed -i '/^\[analytics\]$/,/^\[/ s/;check_for_updates = .*/check_for_updates = false/' $grafana_conf
 # Disable organization creation
@@ -124,13 +126,8 @@ sudo sed -i "/^\[database\]$/,/^\[/ {
   s/;\?password =.*/password = $dbpass/
 }" $grafana_conf
 
-# Restart grafana server
-sudo systemctl restart grafana-server
-
-# Wait for Grafana to start and initialize database
-while [ -z "$(sudo netstat -lnput|grep grafana)" ] ; do
-  sleep 5s
-done
+# Start Grafana and wait for it to be fully started
+ynh_check_starting "HTTP Server Listen" "/var/log/grafana/grafana.log" "240" "grafana-server"
 
 # Change admin name to the specified one
 mail=$(ynh_user_get_info "$admin" 'mail')
@@ -167,6 +164,9 @@ if [[ $is_public -eq 1 ]]; then
   # unprotected_uris allows SSO credentials to be passed anyway.
   ynh_app_setting_set "$app" unprotected_uris "/"
 fi
+
+# Start Grafana and wait for it to be fully started
+ynh_check_starting "HTTP Server Listen" "/var/log/grafana/grafana.log" "240" "grafana-server"
 
 # Reload services
 sudo systemctl reload nginx

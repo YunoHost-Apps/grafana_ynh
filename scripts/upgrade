@@ -51,6 +51,9 @@ sudo systemctl restart grafana-server
 sudo yunohost service add influxdb
 sudo yunohost service add grafana-server --log "/var/log/grafana/grafana.log"
 
+# Upgrade dependencies if needed
+install_dependencies
+
 # Modify Nginx configuration file and copy it to Nginx conf directory
 if [[ "$path" == "/" ]] ; then
   nginx_conf=$SRCPATH/../conf/nginx_root.conf
