@@ -31,18 +31,15 @@ sudo systemctl stop influxdb
 
 # Remove app dependencies
 ynh_remove_app_dependencies || true
-# We keep this second removal for backward compatibility
-ynh_package_autoremove "influxdb-grafana-deps" || true
 
 # If packages deinstalled (weren't installed priorly to package installation)
 # purge remaining files
 if [[ -n "$(dpkg-query --status grafana | grep -E "Status|deinstall")" ]] ; then
   sudo dpkg --purge grafana
-  sudo rm /etc/apt/sources.list.d/grafana_stable.list
+  sudo rm $GRAFANA_REPOSITORY
 fi
 if [[ -n "$(dpkg-query --status influxdb | grep -E "Status|deinstall")" ]] ; then
   sudo dpkg --purge influxdb
-  sudo rm /etc/apt/sources.list.d/influxdb.list
 fi
 
 # Remove services from YunoHost monitoring
@@ -56,7 +53,7 @@ if [[ -f "$netdata_conf" ]] ; then
     s/enabled = yes/# enabled = no/
     s/type = opentsdb/# type = graphite/
     s/destination = localhost:4242/# destination = localhost/
-    s/update every = 60/# update every = 10/ 
+    s/update every = 60/# update every = 10/
   }' $netdata_conf
 fi
 
@@ -73,5 +70,3 @@ ynh_mysql_drop_user "$dbuser" || true
 
 # Reload nginx service
 sudo systemctl reload nginx
-
-
