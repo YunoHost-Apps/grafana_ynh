@@ -58,6 +58,7 @@ ynh_mysql_connect_as "$dbuser" "$dbpass" "$dbname" < ./dump.sql
 
 # Restore InfluxDB data (only if backup not empty)
 # That happens when passing automated tests (NetData not present)
+sudo systemctl stop influxdb
 if [ "$(ls -A $SRCPATH/influxdb_data)" ] ; then
   sudo influxd restore -metadir /var/lib/influxdb/meta $SRCPATH/influxdb_data
 	if [ "$(ls -A $SRCPATH/influxdb_data/opentsdb*)" ] ; then
