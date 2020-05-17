@@ -1,14 +1,29 @@
-Grafana for YunoHost
------------------------------
-[![Install Grafana with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=grafana)
+# Grafana app for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://ci-apps.yunohost.org/jenkins/job/grafana%20%28Community%29/lastBuild/consoleFull)
+[![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana)  
+[![Install grafana with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=grafana)
 
+> *This package allows you to install grafana quickly and simply on a YunoHost server.  
+If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to know how to install and enjoy it.*
+
+## Overview
 **Important: This package is designed to be fed by the NetData application for monitoring measures, so please make sure the YunoHost [NetData package](https://github.com/YunoHost-Apps/netdata_ynh/) is installed before installing it!**
 
 NetData only collects, displays and sets alarms based on data from the last hour; this packages allows to archive every metrics and put up statistics and dashboards on the long term.
 
 Note: You can use it without NetData, but you'll have to install a collection application (e.g. collectd) to gather data.
+
+**Shipped version:** 6.7.3
+
+## Screenshots
+
+![](https://grafana.com/api/dashboards/1295/images/838/image)
+
+## Demo
+
+* [Official demo](https://play.grafana.org)
+
+## Configuration
 
 **Important at first login:**
 
@@ -17,13 +32,13 @@ Note: You can use it without NetData, but you'll have to install a collection ap
 
 **Don't hesitate to create new dashboards**: the default dashboard contains metrics from NetData, but only generic ones that are generated on every machine. NetData dynamically detects services and applications (e.g.redis, nginx, etc.) and enriches its dashboard and generated metrics. Many NetData metrics don't appear in the provided default Grafana dashboard!
 
-**Warnings**:
+## Documentation
 
-* The default dashboard may be updated in a further release of this package, so please make sure you create your own dashboards!
-* Organizations creation doesn't play well with LDAP integration; it is disabled for standard users, but can't be disabled for administrators: **please do not create organizations**!
+ * Official Grafana documentation: https://grafana.com/docs/grafana/latest/
+ * Official InfluxdB documentation: https://docs.influxdata.com/influxdb/
+ * YunoHost documentation: If specific documentation is needed, feel free to contribute.
 
----
-# Package description:
+## YunoHost specific features
 
 * installs InfluxDB as time series database
 * if the NetData package is installed, configures NetData to feed InfluxDB every minute
@@ -31,83 +46,48 @@ Note: You can use it without NetData, but you'll have to install a collection ap
 * creates a Grafana Data Source to fetch data from InfluxDB (and hence NetData!)
 * creates a default dashboard to plot some data from NetData (doesn't cover every metric, can be greatly enhanced!)
 
-It has been tested on x86_64 and ARM.
-
-## General architecture
+#### General architecture
 
 ![image](https://cloud.githubusercontent.com/assets/2662304/20649711/29f182ba-b4ce-11e6-97c8-ab2c0ab59833.png)
 
+#### Multi-users support
 
----
-# InfluxDB
-InfluxDB is an open source **time series database** with
-**no external dependencies**. It's useful for recording metrics,
-events, and performing analytics.
+LDAP and HTTP auth are supported.
 
-**Shipped version:** versions from Debian repositories (updated with the system)
+#### Supported architectures
 
-## Features
+* x86-64b - [![Build Status](https://ci-apps.yunohost.org/ci/logs/grafana%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/grafana/)
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/grafana%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/grafana/)
 
-* Built-in [HTTP API](https://docs.influxdata.com/influxdb/latest/guides/writing_data/) so you don't have to write any server side code to get up and running.
-* Data can be tagged, allowing very flexible querying.
-* SQL-like query language.
-* Simple to install and manage, and fast to get data in and out.
-* It aims to answer queries in real-time. That means every data point is
-  indexed as it comes in and is immediately available in queries that
-  should return in < 100ms.
-  
----
-# Grafana
+## Limitations
 
-Grafana is an open source, feature rich metrics dashboard and graph editor for
-Graphite, Elasticsearch, OpenTSDB, Prometheus and InfluxDB.
+* The default dashboard may be updated in a further release of this package, so please make sure you create your own dashboards!
+* Organizations creation doesn't play well with LDAP integration; it is disabled for standard users, but can't be disabled for administrators: **please do not create organizations**!
 
-![](http://grafana.org/assets/img/features/dashboard_ex1.png)
+## Additional information
 
-## Features
-### Graphite Target Editor
-- Graphite target expression parser
-- Feature rich query composer
-- Quickly add and edit functions & parameters
-- Templated queries
-- [See it in action](http://docs.grafana.org/datasources/graphite/)
+None.
 
-### Graphing
-- Fast rendering, even over large timespans
-- Click and drag to zoom
-- Multiple Y-axis, logarithmic scales
-- Bars, Lines, Points
-- Smart Y-axis formatting
-- Series toggles & color selector
-- Legend values, and formatting options
-- Grid thresholds, axis labels
-- [Annotations](http://docs.grafana.org/reference/annotations/)
-- Any panel can be rendered to PNG (server side using phantomjs)
-
-### Dashboards
-- Create, edit, save & search dashboards
-- Change column spans and row heights
-- Drag and drop panels to rearrange
-- [Templating](http://docs.grafana.org/reference/templating/)
-- [Scripted dashboards](http://docs.grafana.org/reference/scripting/)
-- [Dashboard playlists](http://docs.grafana.org/reference/playlist/)
-- [Time range controls](http://docs.grafana.org/reference/timerange/)
-- [Share snapshots publicly](http://docs.grafana.org/v2.0/reference/sharing/)
-
-### Elasticsearch
-- Feature rich query editor UI
-
-### InfluxDB
-- Use InfluxDB as a metric data source, annotation source
-- Query editor with series and column typeahead, easy group by and function selection
-
-### OpenTSDB
-- Use as metric data source
-- Query editor with metric name typeahead and tag filtering
-
-# Links
+## Links
 
  * Report a bug: https://github.com/YunoHost-Apps/grafana_ynh/issues
+ * Grafana website: https://grafana.com/
+ * Grafana upstream app repository: https://github.com/grafana/
  * InfluxDB website: https://www.influxdata.com/
- * Grafana website: http://grafana.org/
+ * InfluxDB upstream app repository: https://github.com/influxdata/influxdb
  * YunoHost website: https://yunohost.org/
+
+---
+
+Developers info
+----------------
+
+**Only if you want to use a testing branch for coding, instead of merging directly into master.**
+Please do your pull request to the [testing branch](https://github.com/YunoHost-Apps/grafana_ynh/tree/testing).
+
+To try the testing branch, please proceed like that.
+```
+sudo yunohost app install https://github.com/YunoHost-Apps/grafana_ynh/tree/testing --debug
+or
+sudo yunohost app upgrade grafana -u https://github.com/YunoHost-Apps/grafana_ynh/tree/testing --debug
+```
