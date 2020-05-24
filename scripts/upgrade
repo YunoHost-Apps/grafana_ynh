@@ -95,7 +95,7 @@ if [ -f "/etc/apt/sources.list.d/grafana_stable.list" ] ; then
 fi
 
 ynh_install_app_dependencies $pkg_dependencies
-ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/deb stable main" --package="grafana" --key="https://packages.grafana.com/gpg.key"
+ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/deb stable main" --package="grafana (>=$GRAFANA_VERSION)" --key="https://packages.grafana.com/gpg.key"
 
 #=================================================
 # SPECIFIC UPGRADE

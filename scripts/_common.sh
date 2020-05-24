@@ -4,6 +4,8 @@
 # COMMON VARIABLES
 #=================================================
 
+# Debian package version for Grafana
+GRAFANA_VERSION="7.0.0"
 # dependencies used by the app
 pkg_dependencies="influxdb"
 

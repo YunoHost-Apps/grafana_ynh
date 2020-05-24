@@ -14,6 +14,7 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
+		upgrade=1 from_commit=a6403c448199ec31430a3fd88c8318965e9583c4
 		backup_restore=1
 		multi_instance=0
 		incorrect_path=1
@@ -24,3 +25,8 @@
 ;;; Options
 Email=
 Notification=none
+;;; Upgrade options
+	; commit=a6403c448199ec31430a3fd88c8318965e9583c4
+		name=Fix backup/restore
+		manifest_arg=domain=DOMAIN&path=PATH&admin=USER&admin_password=secret&language=en&is_public=1&
+
