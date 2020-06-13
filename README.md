@@ -1,6 +1,6 @@
 # Grafana app for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana)  
+[![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)  
 [![Install grafana with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=grafana)
 
 > *This package allows you to install grafana quickly and simply on a YunoHost server.  
@@ -13,7 +13,7 @@ NetData only collects, displays and sets alarms based on data from the last hour
 
 Note: You can use it without NetData, but you'll have to install a collection application (e.g. collectd) to gather data.
 
-**Shipped version:** 6.7.3
+**Shipped version:** 7.0.3
 
 ## Screenshots
 
