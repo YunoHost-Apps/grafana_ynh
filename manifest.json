@@ -6,7 +6,7 @@
         "en": "Beautiful metric & analytic dashboards for monitoring",
         "fr": "Tableaux de bords de supervision"
     },
-    "version": "1.2.0~ynh1",
+    "version": "7.0.3~ynh1",
     "license": "Apache-2.0",
     "url": "http://grafana.org/",
     "maintainer": {
@@ -15,7 +15,7 @@
         "url": ""
     },
     "requirements": {
-    "yunohost": ">= 3.0.0"
+    "yunohost": ">= 3.8.1"
     },
     "multi_instance": false,
     "services": [
@@ -43,15 +43,6 @@
                 "example": "/grafana",
                 "default": "/grafana"
             },
-	    {
-                "name": "port",
-                "ask": {
-                    "en": "Choose a port for your server. Let as default if you don't want to change it",
-                    "fr": "Entrez un port pour votre serveur. Laissez par défaut si vous ne voulez pas en changer"
-                },
-                "example": "3000",
-                "default": "3000"
-	    },
             {
                 "name": "admin",
                 "type": "user",
