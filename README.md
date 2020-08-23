@@ -13,7 +13,7 @@ NetData only collects, displays and sets alarms based on data from the last hour
 
 Note: You can use it without NetData, but you'll have to install a collection application (e.g. collectd) to gather data.
 
-**Shipped version:** 7.0.3
+**Shipped version:** 7.1.4
 
 ## Screenshots
 
