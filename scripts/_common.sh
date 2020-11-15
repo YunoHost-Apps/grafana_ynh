@@ -5,7 +5,7 @@
 #=================================================
 
 # Debian package version for Grafana
-GRAFANA_VERSION="7.1.4"
+GRAFANA_VERSION="7.3.2"
 # dependencies used by the app
 pkg_dependencies="influxdb"
 

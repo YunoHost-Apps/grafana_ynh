@@ -4,6 +4,11 @@ Changelog
 ## Unreleased
 - Nothing for now...
 
+## [7.3.2~ynh1](https://github.com/YunoHost-Apps/grafana_ynh/pull/22) - 2020-11-15
+
+#### Changed
+* Upgrade to upstream version 7.3.2
+
 ## [7.0.3~ynh1](https://github.com/YunoHost-Apps/grafana_ynh/pull/21) - 2020-06-13
 
 #### Changed
