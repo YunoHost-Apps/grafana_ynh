@@ -82,10 +82,23 @@ ynh_print_info --message="Backing up the InfluxDB database..."
 # Backup InfluxDB data
 # Source: http://stackoverflow.com/questions/39501416/how-to-restore-data-base-using-influxd
 mkdir influxdb_data
-# Backup only if database exists
-# That happens when passing automated tests (NetData not present)
+# Backup only if database exists (compatible with  automated tests where NetData is not present)
+# and if BACKUP_CORE_ONY/do_not_backup_data not set
+BACKUP_CORE_ONLY=${BACKUP_CORE_ONLY:-0}
+do_not_backup_data=$(ynh_app_setting_get --app=$app --key=do_not_backup_data)
+
 if [ -d "/var/lib/influxdb/data/opentsdb" ]; then
-	influxd backup -database opentsdb influxdb_data
+	if ( [ ${do_not_backup_data:-0} -eq 1 ] || [ $BACKUP_CORE_ONLY -eq 1 ] ) 
+	then
+		if [ $BACKUP_CORE_ONLY -eq 1 ]
+		then
+			ynh_print_warn --message="The InfluxDB database will not be saved, because 'BACKUP_CORE_ONLY' is set."
+		else
+			ynh_print_warn --message="The InfluxDB database will not be saved, because 'do_not_backup_data' is set."
+		fi
+	else
+		influxd backup -database opentsdb influxdb_data
+	fi
 fi
 
 #=================================================
