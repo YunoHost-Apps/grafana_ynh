@@ -100,26 +100,28 @@ ynh_add_nginx_config
 #=================================================
 ynh_script_progression --message="Configuring Grafana and InfluxDB..." --weight=30
 # If NetData is installed, configure it to feed InfluxDB
-netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
+netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
 if [ -f "$netdata_conf" ] ; then
-  # If there is already a [backend] section
-  if [ -n "$(cat $netdata_conf | grep '\[backend\]')" ] ; then
-    # These regexps replaces patterns inside ini [sections] ([backend] section, here)
-    # (source: https://stackoverflow.com/a/16987794)
-    sed -i '/^\[backend\]$/,/^\[/ {
-      s/# enabled = no/enabled = yes/
-      s/# type = graphite/type = opentsdb/
-      s/# destination = localhost/destination = localhost:4242/
-      s/# update every = 10/update every = 60/
-    }' $netdata_conf
-  else
-    # Otherwise create the section
-    echo "[backend]
-enabled = yes
-type = opentsdb
-destination = localhost:4242" | tee -a $netdata_conf
+  sed -i '/^\[exporting:global\]$/,/^\[/ {
+        s/enabled = no/enabled = yes/
+        s/# update every = 10/update every = 60/
+      }' $netdata_conf
+  if [ -z "$(grep "yunohost" $netdata_conf)" ] ; then
+      cat >> $netdata_conf <<EOF
+[opentsdb:yunohost]
+    enabled = yes
+    destination = localhost:4242
+    # data source = average
+    # prefix = netdata
+    # hostname = my_hostname
+    update every = 60
+    # buffer on failures = 10
+    # timeout ms = 20000
+    # send names instead of ids = yes
+    # send charts matching = *
+    # send hosts matching = localhost *
+EOF
   fi
-
   # Restart NetData
   ynh_systemd_action --service_name=netdata --action="restart"
 fi
