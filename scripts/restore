@@ -97,8 +97,8 @@ ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
 
-yunohost service add influxdb --description "open source time series database" --log "/var/log/grafana/grafana.log"
-yunohost service add grafana-server --description "open source analytics and monitoring solution" --log "/var/log/grafana/grafana.log" --timeout=600
+yunohost service add influxdb --description="open source time series database" --log="/var/log/grafana/grafana.log"
+yunohost service add grafana-server --description="open source analytics and monitoring solution" --log="/var/log/grafana/grafana.log"
 
 #=================================================
 # START SYSTEMD SERVICE
