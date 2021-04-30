@@ -1,7 +1,7 @@
-# Grafana app for YunoHost
+# Grafana for YunoHost
 
 [![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)  
-[![Install grafana with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=grafana)
+[![Install grafana with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=grafana)
 
 > *This package allows you to install grafana quickly and simply on a YunoHost server.  
 If you don't have YunoHost, please see [here](https://yunohost.org/#/install) to know how to install and enjoy it.*
@@ -13,7 +13,7 @@ NetData only collects, displays and sets alarms based on data from the last hour
 
 Note: You can use it without NetData, but you'll have to install a collection application (e.g. collectd) to gather data.
 
-**Shipped version:** 7.3.3
+**Shipped version:** 7.5.5
 
 ## Screenshots
 
@@ -56,7 +56,7 @@ LDAP and HTTP auth are supported.
 
 #### Supported architectures
 
-* x86-64b - [![Build Status](https://ci-apps.yunohost.org/ci/logs/grafana%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/grafana/)
+* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/grafana%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/grafana/)
 * ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/grafana%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/grafana/)
 
 ## Limitations
@@ -79,10 +79,8 @@ None.
 
 ---
 
-Developers info
-----------------
+## Developers info
 
-**Only if you want to use a testing branch for coding, instead of merging directly into master.**
 Please do your pull request to the [testing branch](https://github.com/YunoHost-Apps/grafana_ynh/tree/testing).
 
 To try the testing branch, please proceed like that.
