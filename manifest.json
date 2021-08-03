@@ -9,6 +9,14 @@
     "version": "8.0.6~ynh1",
     "license": "Apache-2.0",
     "url": "https://grafana.com/oss/grafana/",
+    "upstream": {
+        "license": "Apache-2.0",
+        "website": "https://grafana.com/",
+        "demo": "https://play.grafana.org",
+        "admindoc": "https://yunohost.org/packaging_apps",
+        "userdoc": "https://yunohost.org/apps",
+        "code": "https://github.com/grafana/"
+    },
     "maintainer": {
         "name": "JimboJoe",
         "email": "jimmy@monin.net",
