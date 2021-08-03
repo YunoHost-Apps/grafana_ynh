@@ -3,7 +3,7 @@
     "id": "grafana",
     "packaging_format": 1,
     "description": {
-        "en": "Beautiful metric & analytic dashboards for monitoring",
+        "en": "Metric & analytic dashboards for monitoring",
         "fr": "Tableaux de bords de supervision"
     },
     "version": "7.5.5~ynh1",
@@ -15,50 +15,33 @@
         "url": ""
     },
     "requirements": {
-    "yunohost": ">= 3.8.1"
+    "yunohost": ">= 4.2.0"
     },
     "multi_instance": false,
     "services": [
-        "nginx",
-        "php7.0-fpm"
+        "nginx"
     ],
     "arguments": {
         "install" : [
             {
                 "name": "domain",
                 "type": "domain",
-                "ask": {
-                    "en": "Choose a domain for Grafana",
-                    "fr": "Choisissez un nom de domaine pour Grafana"
-                },
                 "example": "domain.org"
             },
             {
                 "name": "path",
                 "type": "path",
-                "ask": {
-                    "en": "Choose a path for Grafana",
-                    "fr": "Choisissez un chemin pour Grafana"
-                },
                 "example": "/grafana",
                 "default": "/grafana"
             },
             {
                 "name": "admin",
                 "type": "user",
-                "ask": {
-                    "en": "Choose an admin user",
-                    "fr": "Choisissez l'administrateur"
-                },
                 "example": "homer"
             },
             {
                 "name": "is_public",
                 "type": "boolean",
-                "ask": {
-                    "en": "Is it a public application?",
-                    "fr": "Est-ce une application publique ?"
-                },
                 "default": false
             }
         ]
