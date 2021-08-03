@@ -89,8 +89,6 @@ ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name
 #=================================================
 ynh_script_progression --message="Configuring NGINX web server..." --weight=1
 
-### `ynh_add_nginx_config` will use the file conf/nginx.conf
-
 # Create a dedicated nginx config
 ynh_add_nginx_config
 
@@ -98,6 +96,7 @@ ynh_add_nginx_config
 # SPECIFIC SETUP
 #=================================================
 ynh_script_progression --message="Configuring Grafana and InfluxDB..." --weight=30
+
 # If NetData is installed, configure it to feed InfluxDB
 netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
 if [ -f "$netdata_conf" ] ; then

@@ -7,10 +7,10 @@
         "fr": "Tableaux de bords de supervision"
     },
     "version": "8.0.6~ynh1",
-    "license": "Apache-2.0",
+    "license": "AGPL-3.0-only",
     "url": "https://grafana.com/oss/grafana/",
     "upstream": {
-        "license": "Apache-2.0",
+        "license": "AGPL-3.0-only",
         "website": "https://grafana.com/",
         "demo": "https://play.grafana.org",
         "admindoc": "https://yunohost.org/packaging_apps",
