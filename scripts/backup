@@ -63,6 +63,7 @@ ynh_mysql_dump_db --database="$db_name" > db.sql
 # SPECIFIC BACKUP
 #=================================================
 ynh_print_info --message="Backing up the InfluxDB database..."
+
 # Backup InfluxDB data
 # Source: http://stackoverflow.com/questions/39501416/how-to-restore-data-base-using-influxd
 mkdir influxdb_data
