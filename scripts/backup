@@ -6,7 +6,7 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
-#Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
+# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
@@ -15,7 +15,6 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 ynh_clean_setup () {
-	### Remove this function if there's nothing to clean before calling the remove script.
 	true
 }
 # Exit if an error occurs during the execution of the script
@@ -32,32 +31,15 @@ domain=$(ynh_app_setting_get --app=$app --key=domain)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
 #=================================================
-# STANDARD BACKUP STEPS
+# DECLARE DATA AND CONF FILES TO BACKUP
 #=================================================
 ynh_print_info --message="Declaring files to be backed up..."
-
-#=================================================
-# BACKUP THE APP MAIN DIR
-#=================================================
-
-ynh_backup --src_path="/etc/influxdb"
-ynh_backup --src_path="/etc/grafana"
-ynh_backup --src_path="/var/lib/grafana/plugins"
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
 #=================================================
 
 ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
-
-#=================================================
-# BACKUP THE MYSQL DATABASE
-#=================================================
-ynh_print_info --message="Backing up the MySQL database..."
-
-# (However, things like mysql dumps *do* take some time to run, though the
-# copy of the generated dump to the archive still happens later)
-ynh_mysql_dump_db --database="$db_name" > db.sql
 
 #=================================================
 # SPECIFIC BACKUP
@@ -85,6 +67,21 @@ if [ -d "/var/lib/influxdb/data/opentsdb" ]; then
 		influxd backup -database opentsdb influxdb_data
 	fi
 fi
+
+#=================================================
+# BACKUP VARIOUS FILES
+#=================================================
+
+ynh_backup --src_path="/etc/influxdb"
+ynh_backup --src_path="/etc/$app"
+ynh_backup --src_path="/var/lib/grafana/plugins"
+
+#=================================================
+# BACKUP THE MYSQL DATABASE
+#=================================================
+ynh_print_info --message="Backing up the MySQL database..."
+
+ynh_mysql_dump_db --database="$db_name" > db.sql
 
 #=================================================
 # END OF SCRIPT

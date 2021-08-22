@@ -27,9 +27,27 @@ port=$(ynh_app_setting_get --app=$app --key=port)
 #=================================================
 # CHECK VERSION
 #=================================================
+ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
+#=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=4
+
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	ynh_clean_check_starting
+	# Restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
+# STANDARD UPGRADE STEPS
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
@@ -49,27 +67,11 @@ if ynh_legacy_permissions_exists; then
 fi
 
 #=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=4
-
-# Backup the current version of the app
-ynh_backup_before_upgrade
-ynh_clean_setup () {
-	# restore it if the upgrade fails
-	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
@@ -88,8 +90,10 @@ ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
-
+# CONFIGURING GRAFANA AND INFLUXDB
+#=================================================
 ynh_script_progression --message="Configuring Grafana and InfluxDB..." --weight=3
+
 # If NetData is installed, configure it to feed InfluxDB
 if [ -d "/opt/netdata" ] ; then
   netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
@@ -156,6 +160,7 @@ ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<< 
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
+ynh_script_progression --message="Integrating service in YunoHost..."
 
 yunohost service add influxdb --description="open source time series database" --log="/var/log/grafana/grafana.log"
 yunohost service add grafana-server --description="open source analytics and monitoring solution" --log="/var/log/grafana/grafana.log"
