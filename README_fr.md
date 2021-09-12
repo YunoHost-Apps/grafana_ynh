@@ -62,8 +62,6 @@ LDAP and HTTP auth are supported.
 ## Documentations et ressources
 
 * Site officiel de l'app : https://grafana.com/
-* Documentation officielle utilisateur : https://yunohost.org/apps
-* Documentation officielle de l'admin : https://yunohost.org/packaging_apps
 * Dépôt de code officiel de l'app : https://github.com/grafana/
 * Documentation YunoHost pour cette app : https://yunohost.org/app_grafana
 * Signaler un bug : https://github.com/YunoHost-Apps/grafana_ynh/issues

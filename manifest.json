@@ -13,8 +13,6 @@
         "license": "AGPL-3.0-only",
         "website": "https://grafana.com/",
         "demo": "https://play.grafana.org",
-        "admindoc": "https://yunohost.org/packaging_apps",
-        "userdoc": "https://yunohost.org/apps",
         "code": "https://github.com/grafana/"
     },
     "maintainer": {
@@ -23,7 +21,7 @@
         "url": ""
     },
     "requirements": {
-    "yunohost": ">= 4.2.0"
+        "yunohost": ">= 4.2.0"
     },
     "multi_instance": false,
     "services": [
