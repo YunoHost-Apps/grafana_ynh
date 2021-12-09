@@ -6,7 +6,7 @@
         "en": "Metric & analytic dashboards for monitoring",
         "fr": "Tableaux de bords de supervision"
     },
-    "version": "8.0.6~ynh1",
+    "version": "8.0.7~ynh1",
     "license": "AGPL-3.0-only",
     "url": "https://grafana.com/oss/grafana/",
     "upstream": {
