@@ -58,7 +58,27 @@ ynh_script_progression --message="Reinstalling dependencies..." --weight=24
 
 # Define and install dependencies
 ynh_install_app_dependencies $pkg_dependencies
-ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/deb stable main" --package="grafana" --key="https://packages.grafana.com/gpg.key"
+
+#=================================================
+# DOWNLOAD  AND REINSTALL GRAFANA DEB PACKAGE
+#=================================================
+ynh_script_progression --message="Downloading Grafana..." --weight=11
+
+temp_folder="$(mktemp -d)"
+
+grafana_deb_dst="$temp_folder/grafana_deb.deb"
+
+if [ -n "$(uname -m | grep armv6)" ]
+then
+    grafana_deb_url="$url_armv6"
+else
+    grafana_deb_url="$url"
+fi
+
+ynh_exec_quiet "wget -q -O $grafana_deb_dst $grafana_deb_url"
+
+ynh_script_progression --message="Installing Grafana..." --weight=11
+    DEBIAN_FRONTEND=noninteractive ynh_exec_warn_less dpkg --force-confold -i $grafana_deb_dst
 
 #=================================================
 # RESTORE THE MYSQL DATABASE
