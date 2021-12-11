@@ -82,7 +82,7 @@ else
 fi
 
 ynh_exec_quiet "wget -q -O $grafana_deb_dst $grafana_deb_url"
-echo "$sha256sum  grafana_deb_dst" | sha256sum -c -
+echo "$sha256sum  $grafana_deb_dst" | sha256sum -c -
 
 ynh_script_progression --message="Installing Grafana..." --weight=11
     DEBIAN_FRONTEND=noninteractive ynh_exec_warn_less dpkg --force-confold -i $grafana_deb_dst
