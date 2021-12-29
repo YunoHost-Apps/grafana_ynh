@@ -106,8 +106,12 @@ yunohost service add grafana-server --description="open source analytics and mon
 #=================================================
 ynh_script_progression --message="Starting a systemd service..." --weight=1
 
+# Enable the systemd service so that InfluxDB and Grafana start at boot
+systemctl enable influxdb.service --quiet
+systemctl enable grafana-server.service --quiet
+
 ynh_systemd_action --service_name=influxdb --action="start"
-ynh_systemd_action --service_name=grafana-server --action="start" --log_path="/var/log/grafana/grafana.log"
+ynh_systemd_action --service_name=grafana-server --action="start" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
 
 #=================================================
 # GENERIC FINALIZATION
