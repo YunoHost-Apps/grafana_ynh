@@ -44,20 +44,20 @@ ynh_script_progression --message="Removing the MySQL database..." --weight=3
 ynh_mysql_remove_db --db_user=$db_user --db_name=$db_name
 
 #=================================================
-# REMOVE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Removing dependencies..." --weight=26
-
-# Remove metapackage and its dependencies
-ynh_remove_app_dependencies
-
-#=================================================
 # REMOVE NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Removing NGINX web server configuration..." --weight=1
 
 # Remove the dedicated NGINX config
 ynh_remove_nginx_config
+
+#=================================================
+# REMOVE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Removing dependencies..." --weight=26
+
+# Remove metapackage and its dependencies
+ynh_remove_app_dependencies
 
 #=================================================
 # SPECIFIC REMOVE
