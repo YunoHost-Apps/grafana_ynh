@@ -39,7 +39,7 @@ ynh_script_progression --message="Backing up the app before upgrading (may take 
 # Backup the current version of the app
 ynh_backup_before_upgrade
 ynh_clean_setup () {
-	ynh_clean_check_starting
+  ynh_clean_check_starting
 	# Restore it if the upgrade fails
 	ynh_restore_upgradebackup
 }
@@ -66,7 +66,7 @@ if ynh_legacy_permissions_exists; then
   ynh_app_setting_delete --app=$app --key=is_public
 fi
 
-# Migration: remove old repository if defined
+# Migration: remove old repository if defined
 if [ -f "/etc/apt/sources.list.d/grafana_stable.list" ] ; then
 	ynh_secure_remove --file="/etc/apt/sources.list.d/grafana_stable.list"
 fi
@@ -85,7 +85,7 @@ ynh_add_nginx_config
 ynh_script_progression --message="Upgrading dependencies..." --weight=12
 
 ynh_install_app_dependencies $pkg_dependencies
-ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/deb stable main" --package="grafana (>=$GRAFANA_VERSION)" --key="https://packages.grafana.com/gpg.key"
+ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/deb stable main" --package="grafana" --key="https://packages.grafana.com/gpg.key"
 
 #=================================================
 # SPECIFIC UPGRADE
@@ -145,12 +145,12 @@ fi
 # Update default dashboard for NetData (source: https://grafana.com/grafana/dashboards/2701)
 # Remove new lines
 tr -d '\n' < ../conf/netdata_dashboard.json  > dashboard.json
-# Fill the template with the defined data source
+# Fill the template with the defined data source
 sed -i 's/${DS_CENTCOM-INFLUXDB}/InfluxDB/g' dashboard.json
 # Escape the dashboard definition for MySQL query
 dashboard=$(cat dashboard.json)
 printf -v escaped_dashboard "%q" "$dashboard"
-# Import dashboard into MySQL
+# Import dashboard into MySQL
 ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "UPDATE dashboard set data=\"$escaped_dashboard\" WHERE id=99999;"
 # Insert dashboard version if non existent (for downward compatibility)
 ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO  dashboard_version (id, dashboard_id, parent_version, restored_from, version, created, created_by, message, data) VALUES (99999, 99999, 0, 0, 1, '2020-05-16 14:36:50', 1, 'YunoHost installer', \"$escaped_dashboard\");" > /dev/null 2>&1 || true

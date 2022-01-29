@@ -185,15 +185,15 @@ ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<< 
 # Import default dashboard for NetData (source: https://grafana.com/grafana/dashboards/2701)
 # Remove new lines
 tr -d '\n' < ../conf/netdata_dashboard.json  > dashboard.json
-# Fill the template with the defined data source
+# Fill the template with the defined data source
 sed -i 's/${DS_CENTCOM-INFLUXDB}/InfluxDB/g' dashboard.json
 # Escape the dashboard definition for MySQL query (source: https://stackoverflow.com/a/4383994)
 dashboard=$(cat dashboard.json)
 printf -v escaped_dashboard "%q" "$dashboard"
-# Import dashboard into MySQL
+# Import dashboard into MySQL
 ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard (id, version, slug, title, data, org_id, created, updated, uid) VALUES
 (99999, 0, 'NetData', 'NetData', \"$escaped_dashboard\", 1, '2020-05-16 14:36:50', '2020-05-16 14:36:50', 'yunohost');"
-# Add dashboard version
+# Add dashboard version
 ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard_version (id, dashboard_id, parent_version, restored_from, version, created, created_by, message, data) VALUES (99999, 99999, 0, 0, 1, '2020-05-16 14:36:50', 1, 'YunoHost installer', \"$escaped_dashboard\");"
 
 # Enable the systemd service so that InfluxDB and Grafana start at boot

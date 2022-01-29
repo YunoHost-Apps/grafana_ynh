@@ -13,9 +13,9 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Tableaux de bords de supervision
 
-**Version incluse :** 8.3.3~ynh1
+**Version incluse :** 8.3.3~ynh1
 
-**Démo :** https://play.grafana.org
+**Démo :** https://play.grafana.org
 
 ## Captures d'écran
 
@@ -61,10 +61,10 @@ LDAP and HTTP auth are supported.
 
 ## Documentations et ressources
 
-* Site officiel de l'app : https://grafana.com/
-* Dépôt de code officiel de l'app : https://github.com/grafana/
-* Documentation YunoHost pour cette app : https://yunohost.org/app_grafana
-* Signaler un bug : https://github.com/YunoHost-Apps/grafana_ynh/issues
+* Site officiel de l'app : https://grafana.com/
+* Dépôt de code officiel de l'app : https://github.com/grafana/
+* Documentation YunoHost pour cette app : https://yunohost.org/app_grafana
+* Signaler un bug : https://github.com/YunoHost-Apps/grafana_ynh/issues
 
 ## Informations pour les développeurs
 
@@ -77,4 +77,4 @@ ou
 sudo yunohost app upgrade grafana -u https://github.com/YunoHost-Apps/grafana_ynh/tree/testing --debug
 ```
 
-**Plus d'infos sur le packaging d'applications :** https://yunohost.org/packaging_apps
+**Plus d'infos sur le packaging d'applications :** https://yunohost.org/packaging_apps
