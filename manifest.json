@@ -7,7 +7,6 @@
         "fr": "Tableaux de bords de supervision"
     },
     "version": "8.3.3~ynh1",
-    "license": "AGPL-3.0-only",
     "url": "https://grafana.com/oss/grafana/",
     "upstream": {
         "license": "AGPL-3.0-only",
@@ -15,24 +14,23 @@
         "demo": "https://play.grafana.org",
         "code": "https://github.com/grafana/"
     },
+    "license": "AGPL-3.0-only",
     "maintainer": {
         "name": "JimboJoe",
-        "email": "jimmy@monin.net",
-        "url": ""
+        "email": "jimmy@monin.net"
     },
     "requirements": {
-        "yunohost": ">= 4.2.0"
+        "yunohost": ">= 4.3.0"
     },
     "multi_instance": false,
     "services": [
         "nginx"
     ],
     "arguments": {
-        "install" : [
+        "install": [
             {
                 "name": "domain",
-                "type": "domain",
-                "example": "domain.org"
+                "type": "domain"
             },
             {
                 "name": "path",
@@ -42,8 +40,7 @@
             },
             {
                 "name": "admin",
-                "type": "user",
-                "example": "homer"
+                "type": "user"
             },
             {
                 "name": "is_public",
