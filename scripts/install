@@ -59,6 +59,16 @@ port=$(ynh_find_port --port=3000)
 ynh_app_setting_set --app=$app --key=port --value=$port
 
 #=================================================
+# ADD INFLUXDATA REPOSITORY
+#=================================================
+
+wget -qO- https://repos.influxdata.com/influxdb.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdb.gpg > /dev/null
+export DISTRIB_ID=$(lsb_release -si); export DISTRIB_CODENAME=$(lsb_release -sc)
+echo "deb [signed-by=/etc/apt/trusted.gpg.d/influxdb.gpg] https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/influxdb.list > /dev/null
+
+apt update
+
+#=================================================
 # INSTALL DEPENDENCIES
 #=================================================
 ynh_script_progression --message="Installing dependencies..." --weight=44
@@ -92,35 +102,38 @@ ynh_add_nginx_config
 ynh_script_progression --message="Configuring Grafana and InfluxDB..." --weight=30
 
 # If NetData is installed, configure it to feed InfluxDB
-netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
-if [ -f "$netdata_conf" ] ; then
-  sed -i '/^\[exporting:global\]$/,/^\[/ {
-        s/enabled = no/enabled = yes/
-        s/# update every = 10/update every = 60/
-      }' $netdata_conf
-  if [ -z "$(grep "yunohost" $netdata_conf)" ] ; then
-      cat >> $netdata_conf <<EOF
-[opentsdb:yunohost]
-    enabled = yes
-    destination = localhost:4242
-    # data source = average
-    # prefix = netdata
-    # hostname = my_hostname
-    update every = 60
+# as a first version for influxdb2, netdata is not configured (### are added in the removed lines)
+#netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
+###if [ -f "$netdata_conf" ] ; then
+###  sed -i '/^\[exporting:global\]$/,/^\[/ {
+###        s/enabled = no/enabled = yes/
+###        s/# update every = 10/update every = 60/
+###      }' $netdata_conf
+###  if [ -z "$(grep "yunohost" $netdata_conf)" ] ; then
+###      cat >> $netdata_conf <<EOF
+###[opentsdb:yunohost]
+###    enabled = yes
+###    destination = localhost:4242
+###    # data source = average
+###    # prefix = netdata
+###    # hostname = my_hostname
+###    update every = 60
     # buffer on failures = 10
     # timeout ms = 20000
     # send names instead of ids = yes
     # send charts matching = *
     # send hosts matching = localhost *
-EOF
-  fi
+###EOF
+###  fi
   # Restart NetData
-  ynh_systemd_action --service_name=netdata --action="restart"
-fi
+###  ynh_systemd_action --service_name=netdata --action="restart"
+###fi
 
 # Configure InfluxDB
+### Biva: I'm not sure if this should be kept or not for influxdb2?
 if [ -f /etc/influxdb/influxdb.conf ] ; then
   sed -i '/^\[\[opentsdb\]\]$/,/^\[/ s/enabled = false/enabled = true/' /etc/influxdb/influxdb.conf
+  
 else
   [ -d /etc/influxdb ] || mkdir /etc/influxdb
   cp ../conf/influxdb.conf /etc/influxdb
@@ -184,17 +197,17 @@ ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<< 
 
 # Import default dashboard for NetData (source: https://grafana.com/grafana/dashboards/2701)
 # Remove new lines
-tr -d '\n' < ../conf/netdata_dashboard.json  > dashboard.json
+###tr -d '\n' < ../conf/netdata_dashboard.json  > dashboard.json
 # Fill the template with the defined data source
-sed -i 's/${DS_CENTCOM-INFLUXDB}/InfluxDB/g' dashboard.json
+###sed -i 's/${DS_CENTCOM-INFLUXDB}/InfluxDB/g' dashboard.json
 # Escape the dashboard definition for MySQL query (source: https://stackoverflow.com/a/4383994)
-dashboard=$(cat dashboard.json)
-printf -v escaped_dashboard "%q" "$dashboard"
+###dashboard=$(cat dashboard.json)
+###printf -v escaped_dashboard "%q" "$dashboard"
 # Import dashboard into MySQL
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard (id, version, slug, title, data, org_id, created, updated, uid) VALUES
-(99999, 0, 'NetData', 'NetData', \"$escaped_dashboard\", 1, '2020-05-16 14:36:50', '2020-05-16 14:36:50', 'yunohost');"
+###ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard (id, version, slug, title, data, org_id, created, updated, uid) VALUES
+###(99999, 0, 'NetData', 'NetData', \"$escaped_dashboard\", 1, '2020-05-16 14:36:50', '2020-05-16 14:36:50', 'yunohost');"
 # Add dashboard version
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard_version (id, dashboard_id, parent_version, restored_from, version, created, created_by, message, data) VALUES (99999, 99999, 0, 0, 1, '2020-05-16 14:36:50', 1, 'YunoHost installer', \"$escaped_dashboard\");"
+###ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard_version (id, dashboard_id, parent_version, restored_from, version, created, created_by, message, data) VALUES (99999, 99999, 0, 0, 1, '2020-05-16 14:36:50', 1, 'YunoHost installer', \"$escaped_dashboard\");"
 
 # Enable the systemd service so that InfluxDB and Grafana start at boot
 systemctl enable influxdb.service --quiet
