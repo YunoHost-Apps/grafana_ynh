@@ -170,6 +170,7 @@ yunohost service add grafana-server --description="open source analytics and mon
 #=================================================
 ynh_script_progression --message="Restarting a systemd service..." --weight=2
 
+systemctl daemon-reload
 ynh_systemd_action --service_name=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
 
 #=================================================

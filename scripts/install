@@ -173,6 +173,7 @@ sed -i "/^\[database\]$/,/^\[/ {
 ynh_store_file_checksum --file="$grafana_conf"
 
 # Start Grafana and wait for it to be fully started
+systemctl daemon-reload
 ynh_systemd_action --service_name=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
 
 # Change admin name to the specified one
@@ -215,6 +216,7 @@ yunohost service add grafana-server --description="open source analytics and mon
 #=================================================
 ynh_script_progression --message="Starting a systemd service..." --weight=2
 
+systemctl daemon-reload
 ynh_systemd_action --service_name=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
 
 #=================================================
