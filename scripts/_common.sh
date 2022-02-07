@@ -8,7 +8,7 @@
 GRAFANA_VERSION="8.3.3"
 
 # dependencies used by the app
-pkg_dependencies="influxdb"
+pkg_dependencies="influxdb2"
 
 #=================================================
 # PERSONAL HELPERS
