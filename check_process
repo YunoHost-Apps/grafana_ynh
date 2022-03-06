@@ -3,8 +3,8 @@
 	; Manifest
 		domain="domain.tld"
 		path="/path"
-		admin="john"
 		is_public=1
+		admin="john"
 		port="3000"
 	; Checks
 		pkg_linter=1
