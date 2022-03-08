@@ -36,6 +36,10 @@ upgrade_type=$(ynh_check_app_version_changed)
 #=================================================
 ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=4
 
+# Workaround for missing "/var/lib/grafana/plugins"
+mkdir -p "/var/lib/grafana/plugins"
+chown -R $app:$app "/var/lib/grafana/plugins"
+
 # Backup the current version of the app
 ynh_backup_before_upgrade
 ynh_clean_setup () {
