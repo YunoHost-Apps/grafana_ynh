@@ -27,7 +27,7 @@ db_user=$db_name
 # REMOVE SERVICE INTEGRATION IN YUNOHOST
 #=================================================
 
-# Remove the service from the list of services known by Yunohost (added from `yunohost service add`)
+# Remove the service from the list of services known by YunoHost (added from `yunohost service add`)
 if ynh_exec_warn_less yunohost service status grafana-server >/dev/null
 then
 	ynh_script_progression --message="Removing $app service integration..." --weight=1
@@ -62,6 +62,9 @@ ynh_remove_app_dependencies
 #=================================================
 # SPECIFIC REMOVE
 #=================================================
+# REMOVE VARIOUS FILES
+#=================================================
+ynh_script_progression --message="Removing various files..."
 
 # If NetData is installed, configure it not to feed InfluxDB any more
 netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
