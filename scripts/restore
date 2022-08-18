@@ -78,6 +78,10 @@ ynh_restore_file --origin_path="/etc/influxdb"
 ynh_restore_file --origin_path="/etc/grafana"
 ynh_restore_file --origin_path="/var/lib/grafana/plugins" --not_mandatory
 
+# Set permission with the new grafana user (id could have been changed)
+chown -R root:grafana "/etc/grafana"
+chown -R grafana:grafana "/var/lib/grafana/plugins"
+
 #=================================================
 # RESTORE THE INFLUXDB DATABASE
 #=================================================
