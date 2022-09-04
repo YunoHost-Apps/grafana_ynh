@@ -4,15 +4,15 @@
     "packaging_format": 1,
     "description": {
         "en": "Metric & analytic dashboards for monitoring",
-        "fr": "Tableaux de bords de supervision"
+        "fr": "Tableaux de bord de supervision"
     },
-    "version": "8.3.3~ynh1",
+    "version": "9.1.2~ynh1",
     "url": "https://grafana.com/oss/grafana/",
     "upstream": {
         "license": "AGPL-3.0-only",
         "website": "https://grafana.com/",
         "demo": "https://play.grafana.org",
-        "code": "https://github.com/grafana/"
+        "code": "https://github.com/grafana/grafana"
     },
     "license": "AGPL-3.0-only",
     "maintainer": {
