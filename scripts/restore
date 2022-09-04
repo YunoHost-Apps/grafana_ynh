@@ -29,7 +29,6 @@ app=$YNH_APP_INSTANCE_NAME
 
 domain=$(ynh_app_setting_get --app=$app --key=domain)
 path_url=$(ynh_app_setting_get --app=$app --key=path)
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 db_user=$db_name
 
@@ -38,8 +37,8 @@ db_user=$db_name
 #=================================================
 ynh_script_progression --message="Validating restoration parameters..." --weight=1
 
-test ! -d $final_path \
-	|| ynh_die --message="There is already a directory: $final_path "
+test ! -d "/etc/influxdb" \
+	|| ynh_die --message="InfluxDB / Grafana are already installed"
 
 #=================================================
 # STANDARD RESTORATION STEPS

@@ -67,14 +67,12 @@ ynh_remove_app_dependencies
 ynh_script_progression --message="Removing various files..."
 
 # If NetData is installed, configure it not to feed InfluxDB any more
-netdata_conf="/opt/netdata/etc/netdata/netdata.conf"
+netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
 if [[ -f "$netdata_conf" ]] ; then
-  sed -i '/^\[backend\]$/,/^\[/ {
-    s/enabled = yes/# enabled = no/
-    s/type = opentsdb/# type = graphite/
-    s/destination = localhost:4242/# destination = localhost/
-    s/update every = 60/# update every = 10/
-  }' $netdata_conf
+    sed -i '/^\[exporting:global\]$/,/^\[/ {
+        s/enabled = yes/enabled = no/
+        s/update every = 60/# update every = 10/
+      }' $netdata_conf
 fi
 
 ynh_secure_remove --file="/etc/grafana/grafana.ini"
