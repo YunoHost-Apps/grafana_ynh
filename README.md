@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Metric & analytic dashboards for monitoring
 
-**Shipped version:** 8.3.3~ynh2
+**Shipped version:** 9.1.2~ynh1
 
 
 **Demo:** https://play.grafana.org
@@ -67,7 +67,7 @@ LDAP and HTTP auth are supported.
 ## Documentation and resources
 
 * Official app website: <https://grafana.com/>
-* Upstream app code repository: <https://github.com/grafana/>
+* Upstream app code repository: <https://github.com/grafana/grafana>
 * YunoHost documentation for this app: <https://yunohost.org/app_grafana>
 * Report a bug: <https://github.com/YunoHost-Apps/grafana_ynh/issues>
 
