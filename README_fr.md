@@ -17,7 +17,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Tableaux de bord de supervision
 
-**Version incluse :** 9.1.3~ynh1
+**Version incluse :** 9.1.4~ynh1
 
 
 **Démo :** https://play.grafana.org
