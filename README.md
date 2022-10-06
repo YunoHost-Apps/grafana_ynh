@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Metric & analytic dashboards for monitoring
 
-**Shipped version:** 9.1.7~ynh1 *(:warning: This is the `testing` branch. The [`master` branch](https://github.com/YunoHost-Apps/grafana_ynh/tree/master) used in the catalog is currently on version 9.1.6\~ynh1.)*
+**Shipped version:** 9.1.7~ynh1
 
 
 **Demo:** https://play.grafana.org
