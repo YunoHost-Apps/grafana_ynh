@@ -5,25 +5,25 @@ It shall NOT be edited by hand.
 
 # Grafana pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)  
+[![Niveau d’intégration](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)
 [![Installer Grafana avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=grafana)
 
 *[Read this readme in english.](./README.md)*
 
-> *Ce package vous permet d'installer Grafana rapidement et simplement sur un serveur YunoHost.
-Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
+> *Ce package vous permet d’installer Grafana rapidement et simplement sur un serveur YunoHost.
+Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l’installer et en profiter.*
 
-## Vue d'ensemble
+## Vue d’ensemble
 
 Tableaux de bord de supervision
 
-**Version incluse :** 9.3.2~ynh1
+**Version incluse :** 9.3.4~ynh1
 
 **Démo :** https://play.grafana.org
 
-## Captures d'écran
+## Captures d’écran
 
-![Capture d'écran de Grafana](./doc/screenshots/Grafana8_Kubernetes.jpg)
+![Capture d’écran de Grafana](./doc/screenshots/Grafana8_Kubernetes.jpg)
 
 ## Avertissements / informations importantes
 
@@ -65,8 +65,8 @@ LDAP and HTTP auth are supported.
 
 ## Documentations et ressources
 
-* Site officiel de l'app : <https://grafana.com/>
-* Dépôt de code officiel de l'app : <https://github.com/grafana/grafana>
+* Site officiel de l’app : <https://grafana.com/>
+* Dépôt de code officiel de l’app : <https://github.com/grafana/grafana>
 * Documentation YunoHost pour cette app : <https://yunohost.org/app_grafana>
 * Signaler un bug : <https://github.com/YunoHost-Apps/grafana_ynh/issues>
 
@@ -82,4 +82,4 @@ ou
 sudo yunohost app upgrade grafana -u https://github.com/YunoHost-Apps/grafana_ynh/tree/testing --debug
 ```
 
-**Plus d'infos sur le packaging d'applications :** <https://yunohost.org/packaging_apps>
+**Plus d’infos sur le packaging d’applications :** <https://yunohost.org/packaging_apps>
