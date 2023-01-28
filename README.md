@@ -5,7 +5,7 @@ It shall NOT be edited by hand.
 
 # Grafana for YunoHost
 
-[![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![Working status](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)  
+[![Integration level](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![Working status](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)
 [![Install Grafana with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=grafana)
 
 *[Lire ce readme en français.](./README_fr.md)*
@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Metric & analytic dashboards for monitoring
 
-**Shipped version:** 9.3.2~ynh1
+**Shipped version:** 9.3.6~ynh1
 
 **Demo:** https://play.grafana.org
 
