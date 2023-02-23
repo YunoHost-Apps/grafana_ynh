@@ -6,6 +6,7 @@ It shall NOT be edited by hand.
 # Grafana pour YunoHost
 
 [![Niveau d’intégration](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)
+
 [![Installer Grafana avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=grafana)
 
 *[Read this readme in english.](./README.md)*
