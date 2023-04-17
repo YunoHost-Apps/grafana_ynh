@@ -64,7 +64,7 @@ if [ -d "/var/lib/influxdb/data/opentsdb" ]; then
 			ynh_print_warn --message="The InfluxDB database will not be saved, because 'do_not_backup_data' is set."
 		fi
 	else
-		influxd backup -database opentsdb influxdb_data
+		influxd backup -portable influxdb_data
 	fi
 fi
 
