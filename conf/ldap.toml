@@ -78,4 +78,6 @@ group_dn = "*"
 org_role = "Admin"
 # The Grafana organization database id, optional, if left out the default org (id 1) will be used
 org_id = 1
+# Make users grafana admins
+grafana_admin = true
 
