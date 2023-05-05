@@ -146,6 +146,9 @@ EOF
     ynh_systemd_action --service_name=netdata --action="restart"
 fi
 
+# Update Grafana LDAP authentication configuration
+cp ../conf/ldap.toml /etc/grafana
+
 # Update default dashboard for NetData (source: https://grafana.com/grafana/dashboards/2701)
 # Remove new lines
 tr -d '\n' < ../conf/netdata_dashboard.json  > dashboard.json
