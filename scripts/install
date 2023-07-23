@@ -137,12 +137,6 @@ sed -i "/^\[server\]$/,/^\[/ s@;http_port = .*@http_port = $port@" $grafana_conf
 sed -i "/^\[server\]$/,/^\[/ s@;domain = .*@domain = $domain@" $grafana_conf
 # Set final URL
 sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = https://$domain$path_url@" $grafana_conf
-# Specify if using sub_path
-if [ "$path_url" != "/" ]; then
-  sed -i "/^\[server\]$/,/^\[/ s@;serve_from_sub_path = .*@serve_from_sub_path = true@" $grafana_conf
-else
-  sed -i "/^\[server\]$/,/^\[/ s@;serve_from_sub_path = .*@serve_from_sub_path = false@" $grafana_conf
-fi
 # Disable check for updates
 sed -i '/^\[analytics\]$/,/^\[/ s/;check_for_updates = .*/check_for_updates = false/' $grafana_conf
 # Disable analytics reporting
