@@ -146,6 +146,9 @@ EOF
     ynh_systemd_action --service_name=netdata --action="restart"
 fi
 
+# Fix configuration for Grafana instances existing prior to version 10
+sed -i "/^\[server\]$/,/^\[/ s@;serve_from_sub_path = .*@serve_from_sub_path = false@" "/etc/grafana/grafana.ini"
+
 # Update Grafana LDAP authentication configuration
 cp ../conf/ldap.toml /etc/grafana
 
