@@ -18,7 +18,7 @@ Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) po
 
 Tableaux de bord de supervision
 
-**Version incluse :** 10.0.2~ynh1
+**Version incluse :** 10.0.3~ynh1
 
 **Démo :** https://play.grafana.org
 
