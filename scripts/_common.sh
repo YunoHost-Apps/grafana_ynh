@@ -8,7 +8,7 @@
 GRAFANA_VERSION="10.1.5"
 
 # dependencies used by the app
-pkg_dependencies="influxdb"
+#REMOVEME? pkg_dependencies="influxdb"
 
 #=================================================
 # PERSONAL HELPERS

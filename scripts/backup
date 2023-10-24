@@ -14,21 +14,21 @@ source /usr/share/yunohost/helpers
 # MANAGE SCRIPT FAILURE
 #=================================================
 
-ynh_clean_setup () {
+#REMOVEME? ynh_clean_setup () {
 	true
 }
 # Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
+#REMOVEME? ynh_abort_if_errors
 
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_print_info --message="Loading installation settings..."
+#REMOVEME? ynh_print_info --message="Loading installation settings..."
 
-app=$YNH_APP_INSTANCE_NAME
+#REMOVEME? app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+#REMOVEME? domain=$(ynh_app_setting_get --app=$app --key=domain)
+#REMOVEME? db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
 #=================================================
 # DECLARE DATA AND CONF FILES TO BACKUP
@@ -52,7 +52,7 @@ mkdir influxdb_data
 # Backup only if database exists (compatible with  automated tests where NetData is not present)
 # and if BACKUP_CORE_ONY/do_not_backup_data not set
 BACKUP_CORE_ONLY=${BACKUP_CORE_ONLY:-0}
-do_not_backup_data=$(ynh_app_setting_get --app=$app --key=do_not_backup_data)
+#REMOVEME? do_not_backup_data=$(ynh_app_setting_get --app=$app --key=do_not_backup_data)
 
 if [ -d "/var/lib/influxdb/data/opentsdb" ]; then
 	if ( [ ${do_not_backup_data:-0} -eq 1 ] || [ $BACKUP_CORE_ONLY -eq 1 ] ) 
