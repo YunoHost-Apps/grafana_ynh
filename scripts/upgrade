@@ -91,7 +91,7 @@ fi
 sed -i "/^\[server\]$/,/^\[/ s@serve_from_sub_path = .*@serve_from_sub_path = false@" "/etc/grafana/grafana.ini"
 
 # Update Grafana LDAP authentication configuration
-cp ../conf/ldap.toml /etc/grafana
+ynh_add_config --template="ldap.toml" --destination="/etc/grafana/ldap.toml"
 
 # Update default dashboard for NetData (source: https://grafana.com/grafana/dashboards/2701)
 # Remove new lines
