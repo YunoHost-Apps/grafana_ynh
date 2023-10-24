@@ -13,7 +13,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
-#REMOVEME? ynh_script_progression --message="Validating restoration parameters..." --weight=1
+ynh_script_progression --message="Validating restoration parameters..." --weight=1
 
 test ! -d "/etc/influxdb" \
 	|| ynh_die --message="InfluxDB / Grafana are already installed"
