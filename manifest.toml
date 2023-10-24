@@ -53,9 +53,9 @@ ram.runtime = "50M"
     [resources.apt]
     packages = "mariadb-server, influxdb"
 
-    extras.grafana.repo = "deb https://packages.grafana.com/oss/deb stable main"
-    extras.grafana.key = "https://packages.grafana.com/gpg.key"
-    extras.grafana.packages = "grafana"
+    extras.repo = "deb https://packages.grafana.com/oss/deb stable main"
+    extras.key = "https://packages.grafana.com/gpg.key"
+    extras.packages = "grafana"
 
     [resources.database]
     type = "mysql"
