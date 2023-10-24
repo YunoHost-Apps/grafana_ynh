@@ -7,9 +7,6 @@
 # Debian package version for Grafana
 GRAFANA_VERSION="10.1.5"
 
-# dependencies used by the app
-#REMOVEME? pkg_dependencies="influxdb"
-
 #=================================================
 # PERSONAL HELPERS
 #=================================================
