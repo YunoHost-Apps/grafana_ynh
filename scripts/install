@@ -102,7 +102,7 @@ chmod 650 "/etc/grafana/grafana.ini"
 chown $app:$app "/etc/grafana/grafana.ini"
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$grafana_conf"
+ynh_store_file_checksum --file="/etc/grafana/grafana.ini"
 
 # Start Grafana and wait for it to be fully started
 systemctl daemon-reload
