@@ -19,8 +19,11 @@ code = "https://github.com/grafana/grafana"
 yunohost = ">= 11.2"
 architectures = "all"
 multi_instance = false
-ldap = false
-sso = false
+
+ldap = true
+
+sso = true
+
 disk = "50M"
 ram.build = "50M"
 ram.runtime = "50M"
