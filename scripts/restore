@@ -13,9 +13,11 @@ source /usr/share/yunohost/helpers
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
-ynh_script_progression --message="Validating restoration parameters..." --weight=1
-
-test ! -d "/etc/influxdb" || ynh_die --message="InfluxDB/Grafana are already installed"
+#ynh_script_progression --message="Validating restoration parameters..." --weight=1
+#
+# This old test doesn't seem to make sense in packaging v2 anymore, because at this stage the apt dependencies are already installed, so yes /etc/influxdb exists ...
+# it's not clear what was really the intent
+#test ! -d "/etc/influxdb" || ynh_die --message="InfluxDB/Grafana are already installed"
 
 #=================================================
 # STANDARD RESTORATION STEPS
