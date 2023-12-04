@@ -18,7 +18,7 @@ Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) po
 
 Grafana is a multi-platform open source analytics and interactive visualization web application. It provides charts, graphs, and alerts for the web when connected to supported data sources.
 
-**Version incluse :** 10.1.5~ynh1
+**Version incluse :** 10.2.1~ynh1
 
 **Démo :** https://play.grafana.org
 
