@@ -30,6 +30,7 @@ Grafana is a multi-platform open source analytics and interactive visualization 
 
 * Site officiel de l’app : <https://grafana.com/>
 * Dépôt de code officiel de l’app : <https://github.com/grafana/grafana>
+* YunoHost Store: <https://apps.yunohost.org/app/grafana>
 * Signaler un bug : <https://github.com/YunoHost-Apps/grafana_ynh/issues>
 
 ## Informations pour les développeurs
