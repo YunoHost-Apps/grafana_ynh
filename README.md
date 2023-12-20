@@ -18,7 +18,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Metric & analytic dashboards for monitoring
 
-**Shipped version:** 10.2.1~ynh1
+**Shipped version:** 10.2.3~ynh1
 
 **Demo:** https://play.grafana.org
 
