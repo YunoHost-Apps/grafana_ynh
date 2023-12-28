@@ -10,73 +10,6 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-
-ynh_clean_setup () {
-	ynh_clean_check_starting
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
-# RETRIEVE ARGUMENTS FROM THE MANIFEST
-#=================================================
-
-domain=$YNH_APP_ARG_DOMAIN
-path_url=$YNH_APP_ARG_PATH
-is_public=$YNH_APP_ARG_IS_PUBLIC
-admin=$YNH_APP_ARG_ADMIN
-
-app=$YNH_APP_INSTANCE_NAME
-
-#=================================================
-# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
-#=================================================
-ynh_script_progression --message="Validating installation parameters..." --weight=1
-
-# Register (book) web path
-ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
-
-#=================================================
-# STORE SETTINGS FROM MANIFEST
-#=================================================
-ynh_script_progression --message="Storing installation settings..." --weight=2
-
-ynh_app_setting_set --app=$app --key=domain --value=$domain
-ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=admin --value=$admin
-
-#=================================================
-# STANDARD MODIFICATIONS
-#=================================================
-# FIND AND OPEN A PORT
-#=================================================
-ynh_script_progression --message="Finding an available port..." --weight=1
-
-# Find an available port
-port=$(ynh_find_port --port=3000)
-ynh_app_setting_set --app=$app --key=port --value=$port
-
-#=================================================
-# INSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Installing dependencies..." --weight=44
-
-ynh_install_app_dependencies $pkg_dependencies
-ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/deb stable main" --package="grafana" --key="https://packages.grafana.com/gpg.key"
-
-#=================================================
-# CREATE A MYSQL DATABASE
-#=================================================
-ynh_script_progression --message="Creating a MySQL database..." --weight=2
-
-db_name=$(ynh_sanitize_dbid --db_name=$app)
-db_user=$db_name
-ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name
-
-#=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Configuring NGINX web server..." --weight=1
@@ -128,47 +61,15 @@ sed -i '/^\[\[opentsdb\]\]$/,/^\[/ s/^.* enabled = false/enabled = true/' /etc/i
 ynh_systemd_action --service_name=influxdb --action="restart"
 
 # Configure Grafana
-cp ../conf/ldap.toml /etc/grafana
+ynh_add_config --template="ldap.toml" --destination="/etc/grafana/ldap.toml"
 
-grafana_conf="/etc/grafana/grafana.ini"
-# Set final port
-sed -i "/^\[server\]$/,/^\[/ s@;http_port = .*@http_port = $port@" $grafana_conf
-# Set domain
-sed -i "/^\[server\]$/,/^\[/ s@;domain = .*@domain = $domain@" $grafana_conf
-# Set final URL
-sed -i "/^\[server\]$/,/^\[/ s@;root_url = .*@root_url = https://$domain$path_url@" $grafana_conf
-# Specify if using sub_path
-if [ "$path_url" != "/" ]; then
-  sed -i "/^\[server\]$/,/^\[/ s@;serve_from_sub_path = .*@serve_from_sub_path = true@" $grafana_conf
-else
-  sed -i "/^\[server\]$/,/^\[/ s@;serve_from_sub_path = .*@serve_from_sub_path = false@" $grafana_conf
-fi
-# Disable check for updates
-sed -i '/^\[analytics\]$/,/^\[/ s/;check_for_updates = .*/check_for_updates = false/' $grafana_conf
-# Disable analytics reporting
-sed -i '/^\[analytics\]$/,/^\[/ s/;reporting_enabled = .*/reporting_enabled = false/' $grafana_conf
-# Disable organization creation
-sed -i '/^\[users\]$/,/^\[/ s/;allow_org_create = .*/allow_org_create = false/' $grafana_conf
-# Enable HTTP and LDAP authentication
-sed -i '/^\[auth.basic\]$/,/^\[/ s/;enabled = .*/enabled = false/' $grafana_conf
-sed -i '/^\[auth.proxy\]$/,/^\[/ s/;enabled = .*/enabled = true/' $grafana_conf
-sed -i '/^\[auth.ldap\]$/,/^\[/ {
-  s/;enabled = .*/enabled = true/
-  s/;allow_sign_up = .*/allow_sign_up = true/
-}' $grafana_conf
-# Set log level to debug
-sed -i '/^\[log\]$/,/^\[/ s/;level = .*/level = debug/' $grafana_conf
+ynh_add_config --template="grafana.ini" --destination="/etc/grafana/grafana.ini"
 
-# Change URL and database credentials
-sed -i "/^\[database\]$/,/^\[/ {
-  s/;type = .*/type = mysql/
-  s/;name = .*/name = $db_name/
-  s/;user = .*/user = $db_user/
-  s/;\?password =.*/password = $db_pwd/
-}" $grafana_conf
+chmod 650 "/etc/grafana/grafana.ini"
+chown $app:$app "/etc/grafana/grafana.ini"
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$grafana_conf"
+ynh_store_file_checksum --file="/etc/grafana/grafana.ini"
 
 # Start Grafana and wait for it to be fully started
 systemctl daemon-reload
@@ -216,26 +117,6 @@ ynh_script_progression --message="Starting a systemd service..." --weight=2
 
 systemctl daemon-reload
 ynh_systemd_action --service_name=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Configuring permissions..." --weight=1
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# Everyone can access the app.
-	# The "main" permission is automatically created before the install script.
-	ynh_permission_update --permission="main" --add="visitors"
-fi
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --weight=1
-
-ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT

@@ -11,34 +11,13 @@ source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-
-ynh_clean_setup () {
-	ynh_clean_check_starting
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
-
-#=================================================
-# LOAD SETTINGS
-#=================================================
-ynh_script_progression --message="Loading installation settings..." --weight=1
-
-app=$YNH_APP_INSTANCE_NAME
-
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-path_url=$(ynh_app_setting_get --app=$app --key=path)
-db_name=$(ynh_app_setting_get --app=$app --key=db_name)
-db_user=$db_name
-
-#=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
-ynh_script_progression --message="Validating restoration parameters..." --weight=1
-
-test ! -d "/etc/influxdb" \
-	|| ynh_die --message="InfluxDB / Grafana are already installed"
+#ynh_script_progression --message="Validating restoration parameters..." --weight=1
+#
+# This old test doesn't seem to make sense in packaging v2 anymore, because at this stage the apt dependencies are already installed, so yes /etc/influxdb exists ...
+# it's not clear what was really the intent
+#test ! -d "/etc/influxdb" || ynh_die --message="InfluxDB/Grafana are already installed"
 
 #=================================================
 # STANDARD RESTORATION STEPS
@@ -50,23 +29,10 @@ ynh_script_progression --message="Restoring the NGINX web server configuration..
 ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
-# SPECIFIC RESTORATION
-#=================================================
-# REINSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Reinstalling dependencies..." --weight=24
-
-# Define and install dependencies
-ynh_install_app_dependencies $pkg_dependencies
-ynh_install_extra_app_dependencies --repo="deb https://packages.grafana.com/oss/deb stable main" --package="grafana" --key="https://packages.grafana.com/gpg.key"
-
-#=================================================
 # RESTORE THE MYSQL DATABASE
 #=================================================
 ynh_script_progression --message="Restoring the MySQL database..." --weight=2
 
-db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
-ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name --db_pwd=$db_pwd
 ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
 
 #=================================================
@@ -81,14 +47,14 @@ ynh_restore_file --origin_path="/var/lib/grafana/plugins" --not_mandatory
 # Set permission with the new grafana user (id could have been changed)
 chown -R root:grafana "/etc/grafana"
 if [ -d "/var/lib/grafana/plugins" ]; then
-	chown -R grafana:grafana "/var/lib/grafana/plugins"
+	chown -R $app:$app "/var/lib/grafana/plugins"
 fi
 
 #=================================================
 # RESTORE THE INFLUXDB DATABASE
 #=================================================
-
 ynh_script_progression --message="Restoring the InfluxDB database..." --weight=10
+
 # Restore InfluxDB data (only if backup not empty)
 # That happens when passing automated tests (NetData not present)
 ynh_systemd_action --service_name=influxdb --action="stop"
