@@ -16,32 +16,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 ## Overview
 
-Metric & analytic dashboards for monitoring
-
-**Shipped version:** 10.2.1~ynh1
-
-**Demo:** https://play.grafana.org
-
-## Screenshots
-
-![Screenshot of Grafana](./doc/screenshots/Grafana8_Kubernetes.jpg)
-
-## Disclaimers / important information
-
-## Configuration
-
-**Important at first login:**
-
-* you have to go the Grafana Menu (Grafana icon), select your account menu and select *Switch to Main Org.*
-* you can now access the default NetData dashboard via the Home menu
-
-**Don't hesitate to create new dashboards**: the default dashboard contains metrics from NetData, but only generic ones that are generated on every machine. NetData dynamically detects services and applications (e.g.redis, nginx, etc.) and enriches its dashboard and generated metrics. Many NetData metrics don't appear in the provided default Grafana dashboard!
-
-## Documentation
-
- * Official Grafana documentation: https://grafana.com/docs/grafana/latest/
- * Official InfluxdB documentation: https://docs.influxdata.com/influxdb/
- * YunoHost documentation: If specific documentation is needed, feel free to contribute.
+Grafana is a multi-platform open source analytics and interactive visualization web application. It provides charts, graphs, and alerts for the web when connected to supported data sources.
 
 ## YunoHost specific features
 
@@ -51,18 +26,14 @@ Metric & analytic dashboards for monitoring
 * creates a Grafana Data Source to fetch data from InfluxDB (and hence NetData!)
 * creates a default dashboard to plot some data from NetData (doesn't cover every metric, can be greatly enhanced!)
 
-#### General architecture
 
-![image](https://cloud.githubusercontent.com/assets/2662304/20649711/29f182ba-b4ce-11e6-97c8-ab2c0ab59833.png)
+**Shipped version:** 10.1.5~ynh1
 
-#### Multi-users support
+**Demo:** https://play.grafana.org
 
-LDAP and HTTP auth are supported.
+## Screenshots
 
-## Limitations
-
-* The default dashboard may be updated in a further release of this package, so please make sure you create your own dashboards!
-* Organizations creation doesn't play well with LDAP integration; it is disabled for standard users, but can't be disabled for administrators: **please do not create organizations**!
+![Screenshot of Grafana](./doc/screenshots/Grafana8_Kubernetes.jpg)
 
 ## Documentation and resources
 
