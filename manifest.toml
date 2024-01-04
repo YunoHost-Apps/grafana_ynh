@@ -5,7 +5,7 @@ name = "Grafana"
 description.en = "Metric & analytic dashboards for monitoring"
 description.fr = "Tableaux de bord de supervision"
 
-version = "10.1.5~ynh2"
+version = "10.2.3~ynh1"
 
 maintainers = ["JimboJoe"]
 
