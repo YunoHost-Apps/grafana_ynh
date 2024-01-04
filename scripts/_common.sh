@@ -5,7 +5,7 @@
 #=================================================
 
 # Debian package version for Grafana
-GRAFANA_VERSION="$(ynh_read_manifest --key='version' | | cut -d~ -f1)"
+GRAFANA_VERSION="10.2.3"
 
 #=================================================
 # PERSONAL HELPERS
