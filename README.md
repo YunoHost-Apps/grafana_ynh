@@ -27,7 +27,7 @@ Grafana is a multi-platform open source analytics and interactive visualization 
 * creates a default dashboard to plot some data from NetData (doesn't cover every metric, can be greatly enhanced!)
 
 
-**Shipped version:** 10.1.5~ynh2
+**Shipped version:** 10.2.3~ynh1
 
 **Demo:** https://play.grafana.org
 
