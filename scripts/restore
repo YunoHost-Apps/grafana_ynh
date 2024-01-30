@@ -59,10 +59,7 @@ ynh_script_progression --message="Restoring the InfluxDB database..." --weight=1
 # That happens when passing automated tests (NetData not present)
 ynh_systemd_action --service_name=influxdb --action="stop"
 if [ "$(ls -A ./influxdb_data)" ] ; then
-  influxd restore -metadir /var/lib/influxdb/meta ./influxdb_data
-	if [ "$(ls -A ./influxdb_data/opentsdb*)" ] ; then
-  	influxd restore -database opentsdb -data_dir /var/lib/influxdb/data ./influxdb_data
-	fi
+  influxd restore -portable ./influxdb_data
 fi
 
 #=================================================
