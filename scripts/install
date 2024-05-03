@@ -25,10 +25,10 @@ ynh_add_nginx_config
 ynh_script_progression --message="Configuring Grafana and InfluxDB..." --weight=30
 
 # If NetData is installed, configure it to feed InfluxDB
-if [ -d "/opt/netdata/etc/netdata" ] ; then
-  netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
+if [ -d "/var/www/netdata/etc/netdata" ] ; then
+  netdata_conf="/var/www/netdata/etc/netdata/exporting.conf"
   if [ ! -f "$netdata_conf" ] ; then
-    cp "/opt/netdata/usr/lib/netdata/conf.d/exporting.conf" /opt/netdata/etc/netdata
+    cp "/var/www/netdata/usr/lib/netdata/conf.d/exporting.conf" /var/www/netdata/etc/netdata
   fi
   sed -i '/^\[exporting:global\]$/,/^\[/ {
         s/enabled = no/enabled = yes/
