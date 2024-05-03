@@ -39,7 +39,7 @@ ynh_remove_nginx_config
 ynh_script_progression --message="Removing various files..."
 
 # If NetData is installed, configure it not to feed InfluxDB any more
-netdata_conf="/opt/netdata/etc/netdata/exporting.conf"
+netdata_conf="/var/www/netdata/etc/netdata/exporting.conf"
 if [[ -f "$netdata_conf" ]] ; then
     sed -i '/^\[exporting:global\]$/,/^\[/ {
         s/enabled = yes/enabled = no/
