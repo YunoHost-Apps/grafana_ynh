@@ -26,8 +26,7 @@ Grafana is a multi-platform open source analytics and interactive visualization 
 * creates a Grafana Data Source to fetch data from InfluxDB (and hence NetData!)
 * creates a default dashboard to plot some data from NetData (doesn't cover every metric, can be greatly enhanced!)
 
-
-**Paketatutako bertsioa:** 10.2.3~ynh1
+**Paketatutako bertsioa:** 10.2.3~ynh2
 
 **Demoa:** <https://play.grafana.org>
 
