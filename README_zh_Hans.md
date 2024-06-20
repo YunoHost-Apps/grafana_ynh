@@ -3,7 +3,7 @@
 请勿手动编辑。
 -->
 
-# YunoHost 的 Grafana
+# YunoHost 上的 Grafana
 
 [![集成程度](https://dash.yunohost.org/integration/grafana.svg)](https://dash.yunohost.org/appci/app/grafana) ![工作状态](https://ci-apps.yunohost.org/ci/badges/grafana.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/grafana.maintain.svg)
 
