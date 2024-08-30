@@ -1,11 +1,5 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 # Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
@@ -13,36 +7,36 @@ source /usr/share/yunohost/helpers
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
-#ynh_script_progression --message="Validating restoration parameters..." --weight=1
+#ynh_script_progression "Validating restoration parameters..."
 #
 # This old test doesn't seem to make sense in packaging v2 anymore, because at this stage the apt dependencies are already installed, so yes /etc/influxdb exists ...
 # it's not clear what was really the intent
-#test ! -d "/etc/influxdb" || ynh_die --message="InfluxDB/Grafana are already installed"
+#test ! -d "/etc/influxdb" || ynh_die "InfluxDB/Grafana are already installed"
 
 #=================================================
 # STANDARD RESTORATION STEPS
 #=================================================
 # RESTORE THE NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Restoring the NGINX web server configuration..."
+ynh_script_progression "Restoring the NGINX web server configuration..."
 
-ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # RESTORE THE MYSQL DATABASE
 #=================================================
-ynh_script_progression --message="Restoring the MySQL database..." --weight=2
+ynh_script_progression "Restoring the MySQL database..."
 
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
+ynh_mysql_db_shell < ./db.sql
 
 #=================================================
 # RESTORE VARIOUS FILES
 #=================================================
-ynh_script_progression --message="Restoring various files..." --weight=2
+ynh_script_progression "Restoring various files..."
 
-ynh_restore_file --origin_path="/etc/influxdb"
-ynh_restore_file --origin_path="/etc/grafana"
-ynh_restore_file --origin_path="/var/lib/grafana/plugins" --not_mandatory
+ynh_restore "/etc/influxdb"
+ynh_restore "/etc/grafana"
+ynh_restore "/var/lib/grafana/plugins" || true
 
 # Set permission with the new grafana user (id could have been changed)
 chown -R root:grafana "/etc/grafana"
@@ -53,11 +47,11 @@ fi
 #=================================================
 # RESTORE THE INFLUXDB DATABASE
 #=================================================
-ynh_script_progression --message="Restoring the InfluxDB database..." --weight=10
+ynh_script_progression "Restoring the InfluxDB database..."
 
 # Restore InfluxDB data (only if backup not empty)
 # That happens when passing automated tests (NetData not present)
-ynh_systemd_action --service_name=influxdb --action="stop"
+ynh_systemctl --service=influxdb --action="stop"
 if [ "$(ls -A ./influxdb_data)" ] ; then
   influxd restore -portable ./influxdb_data
 fi
@@ -65,7 +59,7 @@ fi
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..."
+ynh_script_progression "Integrating service in YunoHost..."
 
 yunohost service add influxdb --description="open source time series database" --log="/var/log/grafana/grafana.log"
 yunohost service add grafana-server --description="open source analytics and monitoring solution" --log="/var/log/grafana/grafana.log"
@@ -73,27 +67,25 @@ yunohost service add grafana-server --description="open source analytics and mon
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=1
+ynh_script_progression "Starting $app's systemd service..."
 
 # Enable the systemd service so that InfluxDB and Grafana start at boot
 systemctl enable influxdb.service --quiet
 systemctl enable grafana-server.service --quiet
 
 systemctl daemon-reload
-ynh_systemd_action --service_name=influxdb --action="start"
-ynh_systemd_action --service_name=grafana-server --action="start" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
+ynh_systemctl --service=influxdb --action="start"
+ynh_systemctl --service=grafana-server --action="start" --log_path="/var/log/grafana/grafana.log" --wait_until="HTTP Server Listen" --timeout=600
 
-#=================================================
-# GENERIC FINALIZATION
 #=================================================
 # RELOAD NGINX AND PHP-FPM
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --weight=1
+ynh_script_progression "Reloading NGINX web server..."
 
-ynh_systemd_action --service_name=nginx --action=reload
+ynh_systemctl --service=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Restoration completed for $app" --last
+ynh_script_progression "Restoration completed for $app"

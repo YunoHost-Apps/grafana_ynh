@@ -1,36 +1,28 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC STARTING
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# STANDARD MODIFICATIONS
-#=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping a systemd service..." --weight=2
+ynh_script_progression "Stopping $app's systemd service..."
 
-ynh_systemd_action --service_name=grafana-server --action="stop" --log_path="/var/log/grafana/grafana.log"
+ynh_systemctl --service=grafana-server --action="stop" --log_path="/var/log/grafana/grafana.log"
 
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
-ynh_script_progression --message="Updating NGINX web server configuration..." --weight=1
+ynh_script_progression "Updating NGINX web server configuration..."
 
-ynh_change_url_nginx_config
+ynh_config_change_url_nginx
 
 #=================================================
 # SPECIFIC MODIFICATIONS
 #=================================================
 # UPDATE GRAFANA CONFIGURATION
 #=================================================
-ynh_script_progression --message="Updating Grafana configuration..." --weight=1
+ynh_script_progression "Updating Grafana configuration..."
 
 grafana_conf="/etc/grafana/grafana.ini"
 # Set domain
@@ -45,17 +37,15 @@ else
 fi
 
 #=================================================
-# GENERIC FINALISATION
-#=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=2
+ynh_script_progression "Starting $app's systemd service..."
 
 systemctl daemon-reload
-ynh_systemd_action --service_name=grafana-server --action="start" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
+ynh_systemctl --service=grafana-server --action="start" --log_path="/var/log/grafana/grafana.log" --wait_until="HTTP Server Listen" --timeout=600
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Change of URL completed for $app" --last
+ynh_script_progression "Change of URL completed for $app"
