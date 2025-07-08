@@ -45,7 +45,9 @@ fi
 #=================================================
 
 ynh_backup "/etc/influxdb"
+
 ynh_backup "/etc/$app"
+
 ynh_backup "/var/lib/grafana/plugins" || true
 
 #=================================================
