@@ -42,6 +42,9 @@ if [ -d "/var/lib/grafana/plugins" ]; then
 	chown -R $app:$app "/var/lib/grafana/plugins"
 fi
 
+chmod 650 "/etc/grafana/grafana.ini"
+chown $app:$app "/etc/grafana/grafana.ini"
+
 #=================================================
 # RESTORE THE INFLUXDB DATABASE
 #=================================================
