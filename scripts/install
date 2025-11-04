@@ -69,7 +69,7 @@ systemctl daemon-reload
 ynh_systemctl --service=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --wait_until="HTTP Server Listen" --timeout=600
 
 # Change admin name to the specified one
-mail=$(ynh_user_get_info "$admin" 'mail')
+mail=$(ynh_user_get_info --username="$admin" --key="mail")
 ynh_mysql_db_shell <<< "UPDATE user SET login=\"$admin\", email=\"$mail\" WHERE login=\"admin\";"
 
 # Create InfluxDB data source
