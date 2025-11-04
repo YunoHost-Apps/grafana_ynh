@@ -1,30 +1,19 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
-# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
-source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
-#=================================================
-# DECLARE DATA AND CONF FILES TO BACKUP
-#=================================================
-ynh_print_info --message="Declaring files to be backed up..."
+ynh_print_info "Declaring files to be backed up..."
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
 #=================================================
 
-ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # SPECIFIC BACKUP
 #=================================================
-ynh_print_info --message="Backing up the InfluxDB database..."
+ynh_print_info "Backing up the InfluxDB database..."
 
 # Backup InfluxDB data
 # Source: http://stackoverflow.com/questions/39501416/how-to-restore-data-base-using-influxd
@@ -32,16 +21,17 @@ mkdir influxdb_data
 # Backup only if database exists (compatible with  automated tests where NetData is not present)
 # and if BACKUP_CORE_ONY/do_not_backup_data not set
 BACKUP_CORE_ONLY=${BACKUP_CORE_ONLY:-0}
-do_not_backup_data=$(ynh_app_setting_get --app=$app --key=do_not_backup_data)
+do_not_backup_data=$(ynh_app_setting_get --key=do_not_backup_data)
 
 if [ -d "/var/lib/influxdb/data/opentsdb" ]; then
-	if ( [ ${do_not_backup_data:-0} -eq 1 ] || [ $BACKUP_CORE_ONLY -eq 1 ] ) 
+	if ( [ ${do_not_backup_data:-0} -eq 1 ] || [ $BACKUP_CORE_ONLY -eq 1 ] )
+
 	then
 		if [ $BACKUP_CORE_ONLY -eq 1 ]
 		then
-			ynh_print_warn --message="The InfluxDB database will not be saved, because 'BACKUP_CORE_ONLY' is set."
+			ynh_print_warn "The InfluxDB database will not be saved, because 'BACKUP_CORE_ONLY' is set."
 		else
-			ynh_print_warn --message="The InfluxDB database will not be saved, because 'do_not_backup_data' is set."
+			ynh_print_warn "The InfluxDB database will not be saved, because 'do_not_backup_data' is set."
 		fi
 	else
 		influxd backup -portable influxdb_data
@@ -52,19 +42,19 @@ fi
 # BACKUP VARIOUS FILES
 #=================================================
 
-ynh_backup --src_path="/etc/influxdb"
-ynh_backup --src_path="/etc/$app"
-ynh_backup --src_path="/var/lib/grafana/plugins" --not_mandatory
+ynh_backup "/etc/influxdb"
+ynh_backup "/etc/$app"
+ynh_backup "/var/lib/grafana/plugins" || true
 
 #=================================================
 # BACKUP THE MYSQL DATABASE
 #=================================================
-ynh_print_info --message="Backing up the MySQL database..."
+ynh_print_info "Backing up the MySQL database..."
 
-ynh_mysql_dump_db --database="$db_name" > db.sql
+ynh_mysql_dump_db > db.sql
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_print_info --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)."
+ynh_print_info "Backup script completed for $app. (YunoHost will then actually copy those files to the archive)."

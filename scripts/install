@@ -1,28 +1,21 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
-source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring NGINX web server..." --weight=1
+ynh_script_progression "Configuring NGINX web server..."
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
 #=================================================
 # SPECIFIC SETUP
 #=================================================
 # CONFIGURING GRAFANA AND INFLUXDB
 #=================================================
-ynh_script_progression --message="Configuring Grafana and InfluxDB..." --weight=30
+ynh_script_progression "Configuring Grafana and InfluxDB..."
 
 # If NetData is installed, configure it to feed InfluxDB
 if [ -d "/var/www/netdata/etc/netdata" ] ; then
@@ -51,36 +44,36 @@ if [ -d "/var/www/netdata/etc/netdata" ] ; then
 EOF
   fi
   # Restart NetData
-  ynh_systemd_action --service_name=netdata --action="restart"
+  ynh_systemctl --service=netdata --action="restart"
 fi
 
 # Configure InfluxDB
 sed -i '/^\[\[opentsdb\]\]$/,/^\[/ s/^.* enabled = false/enabled = true/' /etc/influxdb/influxdb.conf
 
 # Start InfluxDB server
-ynh_systemd_action --service_name=influxdb --action="restart"
+ynh_systemctl --service=influxdb --action="restart"
 
 # Configure Grafana
-ynh_add_config --template="ldap.toml" --destination="/etc/grafana/ldap.toml"
+ynh_config_add --template="ldap.toml" --destination="/etc/grafana/ldap.toml"
 
-ynh_add_config --template="grafana.ini" --destination="/etc/grafana/grafana.ini"
+ynh_config_add --template="grafana.ini" --destination="/etc/grafana/grafana.ini"
 
 chmod 650 "/etc/grafana/grafana.ini"
 chown $app:$app "/etc/grafana/grafana.ini"
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="/etc/grafana/grafana.ini"
+ynh_store_file_checksum "/etc/grafana/grafana.ini"
 
 # Start Grafana and wait for it to be fully started
 systemctl daemon-reload
-ynh_systemd_action --service_name=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
+ynh_systemctl --service=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --wait_until="HTTP Server Listen" --timeout=600
 
 # Change admin name to the specified one
 mail=$(ynh_user_get_info "$admin" 'mail')
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<< "UPDATE user SET login=\"$admin\", email=\"$mail\" WHERE login=\"admin\";"
+ynh_mysql_db_shell <<< "UPDATE user SET login=\"$admin\", email=\"$mail\" WHERE login=\"admin\";"
 
 # Create InfluxDB data source
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO data_source (id, org_id, version, type, name, access, url, password, user, \`database\`, basic_auth, basic_auth_user, basic_auth_password, is_default, json_data, created, updated, with_credentials, secure_json_data) VALUES (99999, 1, 0, 'influxdb', 'InfluxDB', 'proxy', 'http://localhost:8086', '', '', 'opentsdb', 0, '', '', 0, '{\"tsdbResolution\":1,\"tsdbVersion\":1}', '2017-02-12 14:35:33', '2017-02-12 14:36:27', 0, '{}');"
+ynh_mysql_db_shell <<<  "INSERT INTO data_source (id, org_id, version, type, name, access, url, password, user, \`database\`, basic_auth, basic_auth_user, basic_auth_password, is_default, json_data, created, updated, with_credentials, secure_json_data) VALUES (99999, 1, 0, 'influxdb', 'InfluxDB', 'proxy', 'http://localhost:8086', '', '', 'opentsdb', 0, '', '', 0, '{\"tsdbResolution\":1,\"tsdbVersion\":1}', '2017-02-12 14:35:33', '2017-02-12 14:36:27', 0, '{}');"
 
 # Import default dashboard for NetData (source: https://grafana.com/grafana/dashboards/2701)
 # Remove new lines
@@ -91,21 +84,19 @@ sed -i 's/${DS_CENTCOM-INFLUXDB}/InfluxDB/g' dashboard.json
 dashboard=$(cat dashboard.json)
 printf -v escaped_dashboard "%q" "$dashboard"
 # Import dashboard into MySQL
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard (id, version, slug, title, data, org_id, created, updated, uid) VALUES
+ynh_mysql_db_shell <<<  "INSERT INTO dashboard (id, version, slug, title, data, org_id, created, updated, uid) VALUES
 (99999, 0, 'NetData', 'NetData', \"$escaped_dashboard\", 1, '2020-05-16 14:36:50', '2020-05-16 14:36:50', 'yunohost');"
 # Add dashboard version
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO dashboard_version (id, dashboard_id, parent_version, restored_from, version, created, created_by, message, data) VALUES (99999, 99999, 0, 0, 1, '2020-05-16 14:36:50', 1, 'YunoHost installer', \"$escaped_dashboard\");"
+ynh_mysql_db_shell <<<  "INSERT INTO dashboard_version (id, dashboard_id, parent_version, restored_from, version, created, created_by, message, data) VALUES (99999, 99999, 0, 0, 1, '2020-05-16 14:36:50', 1, 'YunoHost installer', \"$escaped_dashboard\");"
 
 # Enable the systemd service so that InfluxDB and Grafana start at boot
 systemctl enable influxdb.service --quiet
 systemctl enable grafana-server.service --quiet
 
 #=================================================
-# GENERIC FINALIZATION
-#=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..."
+ynh_script_progression "Integrating service in YunoHost..."
 
 yunohost service add influxdb --description="open source time series database" --log="/var/log/grafana/grafana.log"
 yunohost service add grafana-server --description="open source analytics and monitoring solution" --log="/var/log/grafana/grafana.log"
@@ -113,13 +104,13 @@ yunohost service add grafana-server --description="open source analytics and mon
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=2
+ynh_script_progression "Starting $app's systemd service..."
 
 systemctl daemon-reload
-ynh_systemd_action --service_name=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
+ynh_systemctl --service=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --wait_until="HTTP Server Listen" --timeout=600
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression "Installation of $app completed"
