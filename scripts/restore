@@ -12,8 +12,6 @@ source /usr/share/yunohost/helpers
 #test ! -d "/etc/influxdb" || ynh_die "InfluxDB/Grafana are already installed"
 
 #=================================================
-# STANDARD RESTORATION STEPS
-#=================================================
 # RESTORE THE NGINX CONFIGURATION
 #=================================================
 ynh_script_progression "Restoring the NGINX web server configuration..."
