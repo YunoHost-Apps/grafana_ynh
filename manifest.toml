@@ -16,7 +16,7 @@ demo = "https://play.grafana.org"
 code = "https://github.com/grafana/grafana"
 
 [integration]
-yunohost = ">= 11.2"
+yunohost = ">= 12.1.38"
 architectures = "all"
 multi_instance = false
 
