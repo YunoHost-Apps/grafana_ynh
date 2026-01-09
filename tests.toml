@@ -6,4 +6,3 @@ test_format = 1.0
     # Commits to test upgrade from
     # -------------------------------
 
-    test_upgrade_from.993c3b904f558057de4278c1833448fc124e8626.name = "Upgrade from 8.3.3"
