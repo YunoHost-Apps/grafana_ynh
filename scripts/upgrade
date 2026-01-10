@@ -12,7 +12,15 @@ source /usr/share/yunohost/helpers
 ynh_script_progression "Ensuring downward compatibility..."
 if ynh_app_upgrading_from_version_before 12.3.1~ynh1
 then
-	mkdir -p "$install_dir/config/provisioning"
+	ynh_systemctl --service="grafana-server.service" --action=stop
+	systemctl disable "grafana-server.service" --quiet
+	ynh_safe_rm "/etc/systemd/system/multi-user.target.wants/grafana-server.service"
+	systemctl daemon-reload
+
+	mv "/etc/grafana" "$install_dir/config"
+	mv "/etc/default/grafana-server" "$install_dir/config/env"
+
+	mv "/var/lib/grafana" "$data_dir"
 fi
 
 #=================================================

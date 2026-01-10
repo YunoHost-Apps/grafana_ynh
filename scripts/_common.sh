@@ -11,7 +11,6 @@ myynh_set_permissions () {
 	chown -R "$app": "$install_dir"
 	chmod -R u=rwx,g=rwx,o= "$install_dir"
 
-	mkdir -p "$data_dir/plugins"
 	chown -R "$app": "$data_dir"
 	chmod -R u=rwx,g=rwx,o= "$data_dir"
 
