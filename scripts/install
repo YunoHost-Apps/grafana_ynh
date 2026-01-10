@@ -24,13 +24,14 @@ fi
 #=================================================
 ynh_script_progression "Adding $app's configuration files..."
 
+mkdir -p "$install_dir/config"
+mkdir -p "$data_dir/plugins"
+
 ynh_config_add --template="env" --destination="$install_dir/config/env"
 ynh_config_add --template="ldap.toml" --destination="$install_dir/config/ldap.toml"
 ynh_config_add --template="grafana.ini" --destination="$install_dir/config/grafana.ini"
 
 mv "$install_dir/source/conf/provisioning" "$install_dir/config/"
-
-mkdir -p "$data_dir/plugins"
 
 myynh_set_permissions
 
