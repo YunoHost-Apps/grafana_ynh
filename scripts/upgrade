@@ -54,8 +54,6 @@ ynh_config_add --template="grafana.ini" --destination="$install_dir/config/grafa
 
 cp -R "$install_dir/source/conf/provisioning" "$install_dir/config/"
 
-myynh_set_permissions
-
 #=================================================
 # REAPPLY SYSTEM CONFIGURATION
 #=================================================
@@ -65,14 +63,18 @@ ynh_config_add_nginx
 
 ynh_config_add_systemd
 
-yunohost service add "$app" --description="An open source analytics and monitoring solution" --log="/var/log/$app/${app%_*}.log"
+yunohost service add "$app" --description="An open source analytics and monitoring solution" --log="/var/log/$app/$app.log"
+
+ynh_config_add_logrotate
+
+myynh_set_permissions
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/${app%_*}.log"
+ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # END OF SCRIPT

@@ -43,7 +43,7 @@ fi
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/${app%_*}.log"
+ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # END OF SCRIPT

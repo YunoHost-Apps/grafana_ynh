@@ -12,7 +12,6 @@ source /usr/share/yunohost/helpers
 ynh_script_progression "Restoring the app main directory..."
 
 ynh_restore "$install_dir"
-chown -R "$app:www-data" "$install_dir"
 
 #=================================================
 # RESTORE THE DATA DIRECTORY
@@ -37,7 +36,9 @@ ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 ynh_restore "/etc/systemd/system/$app.service"
 systemctl enable "$app.service" --quiet
-yunohost service add "$app" --description="An open source analytics and monitoring solution" --log="/var/log/$app/${app%_*}.log"
+yunohost service add "$app" --description="An open source analytics and monitoring solution" --log="/var/log/$app/$app.log"
+
+ynh_restore "/etc/logrotate.d/$app"
 
 #=================================================
 # RESTORE VARIOUS FILES
@@ -51,7 +52,7 @@ myynh_set_permissions
 #=================================================
 ynh_script_progression "Reloading NGINX web server and $app's service..."
 
-ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/${app%_*}.log"
+ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/$app.log"
 
 ynh_systemctl --service=nginx --action=reload
 
