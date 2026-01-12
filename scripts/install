@@ -19,6 +19,7 @@ elif [[ $YNH_ARCH == "arm64" ]]
 then
 	ynh_setup_source --source_id="arm64" --dest_dir="$install_dir/source"
 fi
+
 #=================================================
 # APP INITIAL CONFIGURATION
 #=================================================

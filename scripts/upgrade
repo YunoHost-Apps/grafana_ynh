@@ -10,6 +10,7 @@ source /usr/share/yunohost/helpers
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 ynh_script_progression "Ensuring downward compatibility..."
+
 if ynh_app_upgrading_from_version_before 12.3.1~ynh1
 then
 	ynh_systemctl --service="grafana-server.service" --action=stop
@@ -79,4 +80,5 @@ ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/
 #=================================================
 # END OF SCRIPT
 #=================================================
+
 ynh_script_progression "Upgrade of $app completed"

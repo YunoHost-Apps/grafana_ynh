@@ -36,6 +36,7 @@ ynh_restore "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 ynh_restore "/etc/systemd/system/$app.service"
 systemctl enable "$app.service" --quiet
+
 yunohost service add "$app" --description="An open source analytics and monitoring solution" --log="/var/log/$app/$app.log"
 
 ynh_restore "/etc/logrotate.d/$app"
@@ -43,6 +44,7 @@ ynh_restore "/etc/logrotate.d/$app"
 #=================================================
 # RESTORE VARIOUS FILES
 #=================================================
+
 ynh_restore "/var/log/$app/"
 
 myynh_set_permissions
@@ -59,4 +61,5 @@ ynh_systemctl --service=nginx --action=reload
 #=================================================
 # END OF SCRIPT
 #=================================================
+
 ynh_script_progression "Restoration completed for $app"
