@@ -1,131 +1,82 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC START
-#=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# CHECK VERSION
+# ENSURE DOWNWARD COMPATIBILITY
 #=================================================
+ynh_script_progression "Ensuring downward compatibility..."
+if ynh_app_upgrading_from_version_before 12.3.1~ynh1
+then
+	ynh_systemctl --service="grafana-server.service" --action=stop
+	systemctl disable "grafana-server.service" --quiet
+	ynh_safe_rm "/etc/systemd/system/multi-user.target.wants/grafana-server.service"
+	systemctl daemon-reload
 
-upgrade_type=$(ynh_check_app_version_changed)
+	mv "/etc/grafana" "$install_dir/config"
+	mv "/etc/default/grafana-server" "$install_dir/config/env"
 
-#=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=4
-
-# Workaround for missing "/var/lib/grafana/plugins"
-mkdir -p "/var/lib/grafana/plugins"
-chown -R $app:$app "/var/lib/grafana/plugins"
-
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
-
-# Create a dedicated NGINX config
-ynh_add_nginx_config
-
-#=================================================
-# SPECIFIC UPGRADE
-#=================================================
-# CONFIGURING GRAFANA AND INFLUXDB
-#=================================================
-ynh_script_progression --message="Configuring Grafana and InfluxDB..." --weight=3
-
-# If NetData is installed, configure it to feed InfluxDB
-if [ -d "/var/www/netdata" ] ; then
-  netdata_conf="/var/www/netdata/etc/netdata/exporting.conf"
-  if [ ! -f $netdata_conf ] ; then
-    cp /var/www/netdata/usr/lib/netdata/conf.d/exporting.conf $netdata_conf
-  fi
-  sed -i '/^\[exporting:global\]$/,/^\[/ {
-        s/enabled = no/enabled = yes/
-        s/# update every = 10/update every = 60/
-      }' $netdata_conf
-  if [ -z "$(grep "yunohost" $netdata_conf)" ] ; then
-      cat >> $netdata_conf <<EOF
-[opentsdb:yunohost]
-    enabled = yes
-    destination = localhost:4242
-    # data source = average
-    # prefix = netdata
-    # hostname = my_hostname
-    update every = 60
-    # buffer on failures = 10
-    # timeout ms = 20000
-    # send names instead of ids = yes
-    # send charts matching = *
-    # send hosts matching = localhost *
-EOF
-  fi
-
-  # Remove obsolete NetData backend if in use
-  netdata_conf="/var/www/netdata/etc/netdata/netdata.conf"
-  if [ -f "$netdata_conf" ] ; then
-    # If there is already a [backend] section
-    if [ -n "$(cat $netdata_conf | grep '\[backend\]')" ] ; then
-      # These regexps replaces patterns inside ini [sections] ([backend] section, here)
-      sed -i '/^\[backend\]$/,/^\[/ {
-        s/enabled = yes/enabled = no/
-      }' $netdata_conf
-    else
-      # Otherwise create the section
-      echo "[backend]
-  enabled = yes
-  type = opentsdb
-  destination = localhost:4242" | tee -a $netdata_conf
-    fi
-  fi
-    # Restart NetData
-    ynh_systemd_action --service_name=netdata --action="restart"
+	mv "/var/lib/grafana" "$data_dir"
 fi
 
-# Fix configuration for Grafana instances existing prior to version 10
-sed -i "/^\[server\]$/,/^\[/ s@serve_from_sub_path = .*@serve_from_sub_path = false@" "/etc/grafana/grafana.ini"
+#=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
+ynh_script_progression "Stopping $app's systemd service..."
 
-# Update Grafana LDAP authentication configuration
-ynh_add_config --template="ldap.toml" --destination="/etc/grafana/ldap.toml"
-
-# Update default dashboard for NetData (source: https://grafana.com/grafana/dashboards/2701)
-# Remove new lines
-tr -d '\n' < ../conf/netdata_dashboard.json  > dashboard.json
-# Fill the template with the defined data source
-sed -i 's/${DS_CENTCOM-INFLUXDB}/InfluxDB/g' dashboard.json
-# Escape the dashboard definition for MySQL query
-dashboard=$(cat dashboard.json)
-printf -v escaped_dashboard "%q" "$dashboard"
-# Import dashboard into MySQL
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "UPDATE dashboard set data=\"$escaped_dashboard\" WHERE id=99999;"
-# Insert dashboard version if non existent (for downward compatibility)
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name <<<  "INSERT INTO  dashboard_version (id, dashboard_id, parent_version, restored_from, version, created, created_by, message, data) VALUES (99999, 99999, 0, 0, 1, '2020-05-16 14:36:50', 1, 'YunoHost installer', \"$escaped_dashboard\");" > /dev/null 2>&1 || true
+ynh_systemctl --action=stop
 
 #=================================================
-# GENERIC FINALIZATION
+# DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-# INTEGRATE SERVICE IN YUNOHOST
-#=================================================
-ynh_script_progression --message="Integrating service in YunoHost..."
+ynh_script_progression "Upgrading source files..."
 
-yunohost service add influxdb --description="open source time series database" --log="/var/log/grafana/grafana.log"
-yunohost service add grafana-server --description="open source analytics and monitoring solution" --log="/var/log/grafana/grafana.log"
+if [[ $YNH_ARCH == "amd64" ]]
+then
+	ynh_setup_source --source_id="main" --dest_dir="$install_dir/source" --full_replace
+elif [[ $YNH_ARCH == "arm64" ]]
+then
+	ynh_setup_source --source_id="arm64" --dest_dir="$install_dir/source" --full_replace
+fi
+
+#=================================================
+# UPDATE A CONFIG FILE
+#=================================================
+ynh_script_progression "Updating $app's configuration files..."
+
+ynh_config_add --template="env" --destination="$install_dir/config/env"
+ynh_config_add --template="ldap.toml" --destination="$install_dir/config/ldap.toml"
+ynh_config_add --template="grafana.ini" --destination="$install_dir/config/grafana.ini"
+
+cp -R "$install_dir/source/conf/provisioning" "$install_dir/config/"
+
+#=================================================
+# REAPPLY SYSTEM CONFIGURATION
+#=================================================
+ynh_script_progression "Upgrading system configurations related to $app..."
+
+ynh_config_add_nginx
+
+ynh_config_add_systemd
+
+yunohost service add "$app" --description="An open source analytics and monitoring solution" --log="/var/log/$app/$app.log"
+
+ynh_config_add_logrotate
+
+myynh_set_permissions
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Restarting a systemd service..." --weight=2
+ynh_script_progression "Starting $app's systemd service..."
 
-systemctl daemon-reload
-ynh_systemd_action --service_name=grafana-server --action="restart" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
+ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
-
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression "Upgrade of $app completed"
