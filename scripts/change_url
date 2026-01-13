@@ -1,61 +1,51 @@
 #!/bin/bash
 
 #=================================================
-# GENERIC STARTING
-#=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# STANDARD MODIFICATIONS
-#=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping a systemd service..." --weight=2
+ynh_script_progression "Stopping $app's systemd service..."
 
-ynh_systemd_action --service_name=grafana-server --action="stop" --log_path="/var/log/grafana/grafana.log"
+ynh_systemctl --action="stop"
 
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
-ynh_script_progression --message="Updating NGINX web server configuration..." --weight=1
+ynh_script_progression "Updating NGINX web server configuration..."
 
-ynh_change_url_nginx_config
+ynh_config_change_url_nginx
 
 #=================================================
 # SPECIFIC MODIFICATIONS
 #=================================================
-# UPDATE GRAFANA CONFIGURATION
-#=================================================
-ynh_script_progression --message="Updating Grafana configuration..." --weight=1
+ynh_script_progression "Updating $app configuration..."
 
-grafana_conf="/etc/grafana/grafana.ini"
+grafana_conf="$(ynh_app_setting_get --key=install_dir)/config/grafana.ini"
 # Set domain
 sed -i "/^\[server\]$/,/^\[/ s@domain = .*@domain = $new_domain@" $grafana_conf
 # Set final URL
 sed -i "/^\[server\]$/,/^\[/ s@root_url = .*@root_url = https://$new_domain$new_path@" $grafana_conf
 # Specify if using sub_path
-if [ "$new_path" != "/" ]; then
-  sed -i "/^\[server\]$/,/^\[/ s@serve_from_sub_path = .*@serve_from_sub_path = true@" $grafana_conf
+if [ "$new_path" != "/" ]
+then
+	sed -i "/^\[server\]$/,/^\[/ s@serve_from_sub_path = .*@serve_from_sub_path = true@" $grafana_conf
 else
-  sed -i "/^\[server\]$/,/^\[/ s@serve_from_sub_path = .*@serve_from_sub_path = false@" $grafana_conf
+	sed -i "/^\[server\]$/,/^\[/ s@serve_from_sub_path = .*@serve_from_sub_path = false@" $grafana_conf
 fi
 
 #=================================================
-# GENERIC FINALISATION
-#=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=2
+ynh_script_progression "Starting $app's systemd service..."
 
-systemctl daemon-reload
-ynh_systemd_action --service_name=grafana-server --action="start" --log_path="/var/log/grafana/grafana.log" --line_match="HTTP Server Listen" --timeout=600
+ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
-
-ynh_script_progression --message="Change of URL completed for $app" --last
+ynh_script_progression "Change of URL completed for $app"
