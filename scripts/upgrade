@@ -23,6 +23,10 @@ then
 
 	mv "/var/lib/grafana" "$data_dir"
 fi
+if ynh_hide_warnings yunohost service status "grafana-server" >/dev/null
+then
+	yunohost service remove "grafana-server"
+fi
 
 #=================================================
 # STOP SYSTEMD SERVICE
