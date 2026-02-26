@@ -5,7 +5,7 @@ name = "Grafana"
 description.en = "Metric & analytic dashboards for monitoring"
 description.fr = "Tableaux de bord de supervision"
 
-version = "12.3.3~ynh2"
+version = "12.4.0~ynh1"
 
 maintainers = ["JimboJoe","ewilly"]
 
@@ -44,8 +44,8 @@ ram.runtime = "200M"
 	[resources.sources]
 
 		[resources.sources.main]
-		url = "https://dl.grafana.com/grafana/release/12.3.3/grafana_12.3.3_21957728731_linux_amd64.tar.gz"
-		sha256 = "d69b850d02903bcfe27289661c5b0b1b9a67d0bf0c42d344d55d0e63e62a7bda"
+		url = "https://dl.grafana.com/grafana/release/12.4.0/grafana_12.4.0_22325204712_linux_amd64.tar.gz"
+		sha256 = "d4d0f07dab9b1c8f2d9227c60a3478614a436292e2aa60cba9105c98a2fc196c"
 		format = "tar.gz"
 		in_subdir = true
 		extract = true
@@ -57,8 +57,8 @@ ram.runtime = "200M"
 		# autoupdate.version_regex = "^https:\\/\\/dl.grafana.com\\/grafana\\/release\\/(\\d+.\\d+.\\d+)\\/grafana_\\1_\\d+_linux_amd64.tar.gz"
 
 		[resources.sources.arm64]
-		url = "https://dl.grafana.com/grafana/release/12.3.3/grafana_12.3.3_21957728731_linux_arm64.tar.gz"
-		sha256 = "a2a50f6a63c89c59914b604482500de2648d12ee266d8eac8886815710482614"
+		url = "https://dl.grafana.com/grafana/release/12.4.0/grafana_12.4.0_22325204712_linux_arm64.tar.gz"
+		sha256 = "5aa01b585f4d21b65c35f98431263ebf0b0ae0b2192643b66e43ee03939b8900"
 		format = "tar.gz"
 		in_subdir = true
 		extract = true
