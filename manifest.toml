@@ -24,7 +24,7 @@ multi_instance = false
 ldap = true
 sso = true
 
-disk = "2G"
+disk = "800M"
 ram.build = "200M"
 ram.runtime = "200M"
 
