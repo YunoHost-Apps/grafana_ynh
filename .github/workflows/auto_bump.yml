@@ -1,0 +1,197 @@
+name: Auto bump Grafana (OSS)
+
+on:
+  schedule:
+    # Every day at 05:30 (repo timezone)
+    - cron: "30 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write        # needed to push branch
+  pull-requests: write   # needed to open PR
+
+concurrency:
+  group: auto-bump-grafana
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout testing branch
+        uses: actions/checkout@v4
+        with:
+          ref: testing
+          # fetch-depth: 0 ensures we can create a new branch off testing
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install tomlkit packaging
+
+      - name: Compute latest Grafana and update manifest (if needed)
+        id: bump
+        env:
+          AMD64_PAGE: "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&platform=linux"
+          ARM64_PAGE: "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&platform=arm"
+          MANIFEST: "manifest.toml"
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python << 'PYCODE'
+          # -*- coding: utf-8 -*-
+          import os, re, sys, hashlib, urllib.request
+          from pathlib import Path
+          from packaging.version import Version
+          import tomlkit
+
+          AMD64_PAGE = os.environ["AMD64_PAGE"]
+          ARM64_PAGE = os.environ["ARM64_PAGE"]
+          MANIFEST   = Path(os.environ["MANIFEST"])
+
+          UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/122.0 Safari/537.36")
+
+          def fetch(url: str) -> str:
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=45) as r:
+              data = r.read()
+            return data.decode("utf-8", errors="ignore")
+
+          def find_assets(html: str, arch_tag: str):
+          # Accept versions like 12.4.1 and 12.3.2+security-01
+          ver = r"(\d+\.\d+\.\d+(?:\+[A-Za-z0-9\.-]+)?)"
+          out = []
+          patterns = [
+            # Modern pattern with build id: grafana_<ver>_<build>_linux_<arch>.tar.gz
+            rf"(https://dl\.grafana\.com/grafana/release/{ver}/grafana_\2_\d+_linux_{arch_tag}\.tar\.gz)",
+            # Legacy pattern without build id: grafana-<ver>.linux-<arch>.tar.gz
+            rf"(https://dl\.grafana\.com/grafana/release/{ver}/grafana-\2\.linux-{arch_tag}\.tar\.gz)",
+          ]
+          for pat in patterns:
+            for m in re.finditer(pat, html):
+              url, ver = m.group(1), m.group(2)
+              out.append((ver, url))
+          uniq = {}
+          for ver, url in out:
+            uniq[url] = ver
+          return [(v, u) for u, v in uniq.items()]
+
+          def pick_latest(pairs):
+            if not pairs:
+              return None
+            pairs.sort(key=lambda p: Version(p[0]), reverse=True)
+            return pairs[0]  # (ver, url)
+
+          def try_fetch_sha256_sidecar(url: str):
+            sidecar = url + ".sha256"
+            try:
+              txt = fetch(sidecar)
+              import re
+              m = re.search(r"\b([a-fA-F0-9]{64})\b", txt)
+              if m:
+                return m.group(1).lower()
+            except Exception:
+              return None
+            return None
+
+          def sha256_of_url(url: str) -> str:
+            side = try_fetch_sha256_sidecar(url)
+            if side:
+              return side
+            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            h = hashlib.sha256()
+            with urllib.request.urlopen(req, timeout=300) as r:
+              while True:
+                chunk = r.read(1024 * 1024)
+                if not chunk:
+                  break
+                h.update(chunk)
+            return h.hexdigest()
+
+          linux_html = fetch(AMD64_PAGE)
+          arm_html   = fetch(ARM64_PAGE)
+
+          amd64_pairs = find_assets(linux_html, "amd64")
+          arm64_pairs = find_assets(arm_html, "arm64")
+
+          amd64_latest = pick_latest(amd64_pairs)
+          arm64_latest = pick_latest(arm64_pairs)
+
+          if not amd64_latest or not arm64_latest:
+            print("::error::Unable to locate download URLs for amd64 and/or arm64 on Grafana pages.")
+            print(f"amd64 candidates: {amd64_pairs}")
+            print(f"arm64 candidates: {arm64_pairs}")
+            sys.exit(1)
+
+          latest_versions = { amd64_latest[0], arm64_latest[0] }
+          latest_version = str(max(Version(v) for v in latest_versions))
+
+          latest_amd64_url = amd64_latest[1]
+          latest_arm64_url = arm64_latest[1]
+
+          text = MANIFEST.read_text(encoding="utf-8")
+          doc = tomlkit.parse(text)
+
+          current_version = str(doc["version"])
+          base_version = current_version.split("~", 1)[0]
+
+          if base_version == latest_version:
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+              f.write("changed=false\n")
+            sys.exit(0)
+
+          amd64_sha256 = sha256_of_url(latest_amd64_url)
+          arm64_sha256 = sha256_of_url(latest_arm64_url)
+
+          doc["version"] = f"{latest_version}~ynh1"
+          doc["resources"]["sources"]["main"]["amd64"]["url"]    = latest_amd64_url
+          doc["resources"]["sources"]["main"]["amd64"]["sha256"] = amd64_sha256
+          doc["resources"]["sources"]["arm64"]["arm64"]["url"]    = latest_arm64_url
+          doc["resources"]["sources"]["arm64"]["arm64"]["sha256"] = arm64_sha256
+
+          MANIFEST.write_text(tomlkit.dumps(doc), encoding="utf-8")
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+            f.write("changed=true\n")
+            f.write(f"new_version={latest_version}\n")
+            f.write(f"linux_url={latest_amd64_url}\n")
+            f.write(f"linux_sha256={amd64_sha256}\n")
+            f.write(f"arm64_url={latest_arm64_url}\n")
+            f.write(f"arm64_sha256={arm64_sha256}\n")
+          PYCODE
+
+      - name: Create Pull Request
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          # Create working branch off "testing" and open PR into "testing"
+          base: testing
+          branch: chore/bump-grafana-v${{ steps.bump.outputs.new_version }}
+          commit-message: |
+            chore(grafana): bump to v${{ steps.bump.outputs.new_version }}
+          title: "chore: bump Grafana to v${{ steps.bump.outputs.new_version }} (base: testing)"
+          body: |
+            Automated bump detected a new Grafana OSS release.
+
+            **New version:** `${{ steps.bump.outputs.new_version }} ~ynh1`
+
+            **Assets**
+            - amd64.url: `${{ steps.bump.outputs.linux_url }}`  
+              sha256: `${{ steps.bump.outputs.linux_sha256 }}`
+            - arm64.url: `${{ steps.bump.outputs.arm64_url }}`  
+              sha256: `${{ steps.bump.outputs.arm64_sha256 }}`
+
+            _This PR was created by the daily auto-bump workflow (base: testing)._
+          delete-branch: true
+          labels: |
+            autoupdate
+            grafana
