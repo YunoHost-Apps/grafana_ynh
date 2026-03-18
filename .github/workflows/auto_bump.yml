@@ -43,7 +43,7 @@ jobs:
           set -euo pipefail
           python scripts/auto_bump_grafana.py
 
-      - name: Create Pull Request (base: testing)
+      - name: Create Pull Request
         if: steps.bump.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
