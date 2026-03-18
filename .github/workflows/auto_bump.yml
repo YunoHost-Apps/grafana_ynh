@@ -25,7 +25,8 @@ jobs:
       - name: 📂 Checkout testing branch
         uses: actions/checkout@v4
         with:
-          ref: testing
+          #ref: testing
+          ref: auto_bump
           fetch-depth: 0
 
       ######################################################################
@@ -53,11 +54,12 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
-          base: testing
+          #base: testing
+          base: auto_bump
           branch: bump-grafana-v${{ steps.bump.outputs.new_version }}
           commit-message: |
             Bump to v${{ steps.bump.outputs.new_version }} (~ynh1)
-          title: "Bump Grafana to v${{ steps.bump.outputs.new_version }} (base: testing)"
+          title: "Bump Grafana to v${{ steps.bump.outputs.new_version }}"
           body: |
             Automated bump detected a new Grafana OSS release.
 
