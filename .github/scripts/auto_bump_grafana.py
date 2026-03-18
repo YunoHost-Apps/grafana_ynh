@@ -1,215 +1,223 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Auto-bump Grafana (OSS) for YunoHost manifest.
-
-What it does:
-- Scrape official download pages (hardcoded URLs below) for linux_amd64 and linux_arm64.
-- Supports versions like "12.4.1" and "12.3.2+security-01".
-- Picks the latest version that exists for BOTH architectures.
-- Compares with manifest.toml (ignores "~ynhX" suffix).
-- If newer: read sha256 from the HTML page ONLY (no fallback), update manifest.toml,
-  and print GitHub Actions outputs (changed/new_version/urls/sha256).
-
-Environment variables:
-- MANIFEST (optional): path to manifest.toml (default: "manifest.toml")
-- GITHUB_OUTPUT (optional): if set, key=value pairs are appended for downstream steps.
-
-Dependencies:
-- tomlkit (preserves format/comments), packaging (robust version compare).
+Auto-bump Grafana for GitHub Actions.
 """
 
 import os
 import re
 import sys
-import urllib.request
+import requests
 from pathlib import Path
-from typing import List, Tuple, Optional
-from packaging.version import Version
+from typing import Optional
 import tomlkit
+from packaging import version as pkg_version
 
-# ---------------------------------------------------------------------------
-# Hardcoded pages (as requested)
-# ---------------------------------------------------------------------------
+
 AMD64_PAGE = "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&platform=linux"
-ARM64_PAGE = "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&platform=arm"
+ARM64_PAGE  = "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&platform=arm"
 
-# Manifest location (can be overridden via env if needed)
-MANIFEST = Path(os.environ.get("MANIFEST", "manifest.toml"))
-
-UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/122.0 Safari/537.36")
+UA = "Mozilla/5.0 (X11; Linux x86_64) AutoBumpGrafana/1.0"
 
 
-def fetch(url: str, timeout: int = 60) -> str:
-    """Fetch a URL and return decoded text (utf-8, ignore errors)."""
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        data = r.read()
-    return data.decode("utf-8", errors="ignore")
+# ──────────────────────────────────────────────────────────────────────────────
+# GHA helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def gha_output(key: str, value: str) -> None:
+    """Append a key=value pair to the GitHub Actions output file."""
+    gh_env = os.environ.get("GITHUB_OUTPUT")
+    if gh_env:
+        with open(gh_env, "a", encoding="utf-8") as f:
+            f.write(f"{key}={value}\n")
+    else:
+        # Local debug fallback
+        with open("/tmp/GITHUB_OUTPUT.tmp", "a", encoding="utf-8") as f:
+            f.write(f"{key}={value}\n")
 
 
-def find_assets(html: str, arch_tag: str) -> List[Tuple[str, str]]:
+def gha_error(msg: str) -> None:
+    """Print a GHA error annotation (shown in red in the Actions UI)."""
+    print(f"::error::{msg}")
+
+
+def gha_warning(msg: str) -> None:
+    """Print a GHA warning annotation."""
+    print(f"::warning::{msg}")
+
+
+def gha_notice(msg: str) -> None:
+    """Print a GHA notice annotation."""
+    print(f"::notice::{msg}")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# HTTP
+# ──────────────────────────────────────────────────────────────────────────────
+
+def fetch(url: str) -> str:
     """
-    Extract download URLs and versions for a given arch.
-    Accept versions like '12.4.1' and '12.3.2+security-01'.
+    Return the RAW page text — without html.unescape().
 
-    Returns a list of (version_str, url).
+    WHY: Grafana embeds asset metadata as JSON in the page with slashes
+    escaped as \\u002F.  Calling html.unescape() moves the URL ~1 000 000
+    chars away from the matching sha256, breaking extraction.
+    Keeping the raw text guarantees URL and sha256 are ~30 chars apart.
     """
-    ver = r"(\d+\.\d+\.\d+(?:\+[A-Za-z0-9\.-]+)?)"
-    patterns = [
-        # Modern format with build id: grafana_<ver>_<build>_linux_<arch>.tar.gz
-        rf"(https://dl\.grafana\.com/grafana/release/{ver}/grafana_\2_\d+_linux_{arch_tag}\.tar\.gz)",
-        # Legacy format without build id: grafana-<ver>.linux-<arch>.tar.gz
-        rf"(https://dl\.grafana\.com/grafana/release/{ver}/grafana-\2\.linux-{arch_tag}\.tar\.gz)",
-    ]
-    out: List[Tuple[str, str]] = []
-    for pat in patterns:
-        for m in re.finditer(pat, html):
-            url, version = m.group(1), m.group(2)
-            out.append((version, url))
-    # Deduplicate by URL
-    uniq = {}
-    for version, url in out:
-        uniq[url] = version
-    return [(v, u) for u, v in uniq.items()]
+    headers = {"User-Agent": UA}
+    r = requests.get(url, headers=headers, timeout=20)
+    r.raise_for_status()
+    return r.text   # do NOT call html.unescape()
 
 
-def pick_latest_common(amd64_pairs: List[Tuple[str, str]],
-                       arm64_pairs: List[Tuple[str, str]]) -> str:
+# ──────────────────────────────────────────────────────────────────────────────
+# Asset extraction
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _normalize_url(u: str) -> str:
+    """Decode \\u002F-escaped slashes from the Grafana JSON."""
+    return u.replace("\\u002F", "/").replace("\\/", "/")
+
+
+def extract_asset(raw_html: str, arch: str) -> dict:
     """
-    Choose the latest version present on BOTH pages to avoid mismatches.
+    Extract URL + sha256 for linux_<arch>.tar.gz from the raw page.
+
+    The URL is searched in its \\u002F-escaped form so that url and sha256
+    remain ~30 chars apart in the raw JSON fragment.
     """
-    amd64_versions = {v for v, _ in amd64_pairs}
-    arm64_versions = {v for v, _ in arm64_pairs}
-    common = amd64_versions & arm64_versions
-    if not common:
-        raise RuntimeError(
-            "No common Grafana version between amd64 and arm64 pages.\n"
-            f"amd64: {sorted(amd64_versions)}\narm64: {sorted(arm64_versions)}"
-        )
-    latest = max((Version(v) for v in common))
-    return str(latest)
-
-
-def url_for_version(pairs: List[Tuple[str, str]], version_str: str) -> Optional[str]:
-    for v, u in pairs:
-        if v == version_str:
-            return u
-    return None
-
-
-def extract_sha256_from_html(html: str, asset_url: str) -> Optional[str]:
-    """
-    Try to find a 64-hex SHA256 in the HTML near the asset URL.
-    Strategy:
-      - Search around each occurrence of the asset URL and look ahead/behind a window
-        for a 64-hex digest. We keep the window reasonably large to be resilient
-        to HTML structure changes.
-    """
-    sha_pat = re.compile(r"\b([a-fA-F0-9]{64})\b")
-    # Search all occurrences of the asset URL
-    for m in re.finditer(re.escape(asset_url), html):
-        start = max(0, m.start() - 1500)   # 1500 chars before
-        end   = min(len(html), m.end() + 1500)  # 1500 chars after
-        window = html[start:end]
-        msha = sha_pat.search(window)
-        if msha:
-            return msha.group(1).lower()
-    return None
-
-
-def read_sha256_from_page(linux_html: str, arm_html: str, asset_url: str, arch: str) -> str:
-    """
-    Read SHA256 from the corresponding download page (no fallback).
-    """
-    page_html = linux_html if arch == "amd64" else arm_html
-    sha = extract_sha256_from_html(page_html, asset_url)
-    if not sha:
-        raise RuntimeError(f"Unable to find sha256 on page for asset: {asset_url}")
-    return sha
-
-
-def write_outputs(**kv):
-    """
-    Write GitHub Actions outputs if GITHUB_OUTPUT is available.
-    """
-    out = os.environ.get("GITHUB_OUTPUT")
-    if not out:
-        return
-    with open(out, "a", encoding="utf-8") as f:
-        for k, v in kv.items():
-            f.write(f"{k}={v}\n")
-
-
-def main():
-    # Fetch pages
-    linux_html = fetch(AMD64_PAGE)
-    arm_html = fetch(ARM64_PAGE)
-
-    # Parse candidate assets
-    amd64_pairs = find_assets(linux_html, "amd64")
-    arm64_pairs = find_assets(arm_html, "arm64")
-
-    if not amd64_pairs or not arm64_pairs:
-        print("::error::Unable to locate download URLs for amd64 and/or arm64.", file=sys.stderr)
-        sys.exit(1)
-
-    # Select latest common version
-    latest_version = pick_latest_common(amd64_pairs, arm64_pairs)
-    latest_amd64_url = url_for_version(amd64_pairs, latest_version)
-    latest_arm64_url = url_for_version(arm64_pairs, latest_version)
-
-    if not latest_amd64_url or not latest_arm64_url:
-        print("::error::Selected latest version missing for one architecture.", file=sys.stderr)
-        sys.exit(1)
-
-    # Load manifest
-    text = MANIFEST.read_text(encoding="utf-8")
-    doc = tomlkit.parse(text)
-
-    # Current version and base (remove "~ynhX")
-    current_version = str(doc["version"])
-    base_version = current_version.split("~", 1)[0]
-
-    # Compare versions using packaging.Version (handles "+security-xx")
-    if Version(base_version) == Version(latest_version):
-        print(f"No update needed. Current={current_version}, Latest={latest_version}")
-        write_outputs(changed="false")
-        return
-
-    # Read checksums from pages ONLY (no .sha256 sidecar, no download)
-    print(f"Found new Grafana version: {latest_version} (current {current_version})")
-    print("Reading sha256 from Grafana pages (no fallback)...")
-    amd64_sha256 = read_sha256_from_page(linux_html, arm_html, latest_amd64_url, "amd64")
-    arm64_sha256 = read_sha256_from_page(linux_html, arm_html, latest_arm64_url, "arm64")
-
-    # Update manifest
-    doc["version"] = f"{latest_version}~ynh1"
-    # [resources.sources.main].amd64.*
-    doc["resources"]["sources"]["main"]["amd64"]["url"] = latest_amd64_url
-    doc["resources"]["sources"]["main"]["amd64"]["sha256"] = amd64_sha256
-    # [resources.sources.arm64].arm64.*
-    doc["resources"]["sources"]["arm64"]["arm64"]["url"] = latest_arm64_url
-    doc["resources"]["sources"]["arm64"]["arm64"]["sha256"] = arm64_sha256
-
-    MANIFEST.write_text(tomlkit.dumps(doc), encoding="utf-8")
-
-    # Expose outputs for PR step
-    write_outputs(
-        changed="true",
-        new_version=latest_version,
-        linux_url=latest_amd64_url,
-        linux_sha256=amd64_sha256,
-        arm64_url=latest_arm64_url,
-        arm64_sha256=arm64_sha256,
+    url_pattern = re.compile(
+        r'https:\\u002F\\u002Fdl\.grafana\.com\\u002Fgrafana\\u002Frelease\\u002F'
+        r'[^"]+linux_' + arch + r'\.tar\.gz',
+        re.IGNORECASE,
     )
-    print("manifest.toml updated successfully.")
+
+    m = url_pattern.search(raw_html)
+    if not m:
+        raise RuntimeError(f"Could not find linux_{arch}.tar.gz URL in page")
+
+    url = _normalize_url(m.group(0))
+
+    mver = re.search(r'/release/([^/]+)/', url)
+    if not mver:
+        raise RuntimeError("Unable to extract version from URL: " + url)
+    version = mver.group(1)
+
+    # sha256 sits ~30 chars after the URL end in the raw JSON — use a tight window
+    vicinity = raw_html[max(0, m.start() - 100): m.end() + 200]
+    sha_m = re.search(r'"sha256"\s*:\s*"([0-9a-fA-F]{64})"', vicinity)
+    if not sha_m:
+        raise RuntimeError(f"sha256 not found near linux_{arch} URL")
+
+    return {"url": url, "sha256": sha_m.group(1).lower(), "version": version}
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Manifest helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def read_manifest_version(path: Path) -> Optional[str]:
+    try:
+        doc = tomlkit.parse(path.read_text(encoding="utf-8"))
+        raw = doc["version"].strip()
+        return re.sub(r'\s*~ynh\d+\s*$', '', raw)
+    except Exception as exc:
+        gha_warning(f"Could not read manifest version: {exc}")
+        return None
+
+
+def update_manifest(path: Path, version: str, amd64: dict, arm64: dict) -> None:
+    doc = tomlkit.parse(path.read_text(encoding="utf-8"))
+
+    doc["version"] = f"{version}~ynh1"
+
+    try:
+        main = doc["resources"]["sources"]["main"]
+    except (KeyError, TypeError):
+        raise KeyError("Missing [resources.sources.main] in manifest.toml")
+
+    for sub in ("amd64", "arm64"):
+        if sub not in main or not isinstance(main[sub], dict):
+            raise KeyError(f"Missing subtable [resources.sources.main.{sub}]")
+
+    main["amd64"]["url"]    = amd64["url"]
+    main["amd64"]["sha256"] = amd64["sha256"]
+    main["arm64"]["url"]    = arm64["url"]
+    main["arm64"]["sha256"] = arm64["sha256"]
+
+    path.write_text(tomlkit.dumps(doc), encoding="utf-8")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Entry point
+# ──────────────────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    manifest_path = Path(os.environ.get("MANIFEST", "manifest.toml")).resolve()
+
+    # 1. Read current version
+    current = read_manifest_version(manifest_path)
+    if current is None:
+        gha_error("Cannot read current version from manifest.toml")
+        sys.exit(1)
+
+    # 2. Fetch pages
+    try:
+        amd_html = fetch(AMD64_PAGE)
+        arm_html = fetch(ARM64_PAGE)
+    except requests.RequestException as exc:
+        gha_error(f"Network error: {exc}")
+        sys.exit(1)
+
+    # 3. Extract assets
+    try:
+        amd = extract_asset(amd_html, "amd64")
+        arm = extract_asset(arm_html, "arm64")
+    except RuntimeError as exc:
+        gha_error(str(exc))
+        sys.exit(1)
+
+    # 4. Log extracted values (essential for CI debugging)
+    gha_notice(f"amd64: {amd['url']} (sha256: {amd['sha256']})")
+    gha_notice(f"arm64: {arm['url']} (sha256: {arm['sha256']})")
+
+    # 5. Sanity check
+    if amd["version"] != arm["version"]:
+        gha_error(f"Upstream version mismatch: amd64={amd['version']} arm64={arm['version']}")
+        sys.exit(1)
+
+    new_ver = amd["version"]
+
+    # 6. Compare versions
+    try:
+        bump_needed = (current is None) or (
+            pkg_version.parse(new_ver) > pkg_version.parse(current)
+        )
+    except pkg_version.InvalidVersion:
+        bump_needed = (new_ver != current)
+
+    if not bump_needed:
+        gha_output("changed", "false")
+        print(f"No update needed (current={current}, upstream={new_ver}).")
+        return
+
+    # 7. Emit GHA outputs BEFORE writing the manifest
+    gha_output("changed",       "true")
+    gha_output("new_version",   new_ver)
+    gha_output("linux_url",     amd["url"])
+    gha_output("linux_sha256",  amd["sha256"])
+    gha_output("arm64_url",     arm["url"])
+    gha_output("arm64_sha256",  arm["sha256"])
+
+    # 8. Update manifest
+    try:
+        update_manifest(manifest_path, new_ver, amd, arm)
+    except (KeyError, OSError) as exc:
+        gha_error(f"Failed to update manifest: {exc}")
+        sys.exit(1)
+
+    print(f"Bumped Grafana to {new_ver}~ynh1")
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"::error::{e}", file=sys.stderr)
-        sys.exit(1)
+    main()
