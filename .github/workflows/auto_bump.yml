@@ -19,39 +19,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout testing branch
-        uses: actions/checkout@v6
+      ######################################################################
+      # CHECKOUT TESTING BRANCH (needed to read manifest.toml)
+      ######################################################################
+      - name: 📂 Checkout testing branch
+        uses: actions/checkout@v4
         with:
           ref: testing
           fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Install Python deps
+      ######################################################################
+      # PYTHON DEPS
+      ######################################################################
+      - name: 📦 Install Python deps
         run: |
-          python -m pip install --upgrade pip
-          pip install tomlkit packaging
+          pip3 install tomlkit packaging
 
-      - name: Run auto-bump script
+      ######################################################################
+      # RUN PYTHON SCRIPT (update manifest)
+      ######################################################################
+      - name: ✏️ Update manifest.toml
         id: bump
         env:
           MANIFEST: "manifest.toml"
         run: |
-          set -euo pipefail
-          python .github/workflows/scripts/auto_bump_grafana.py
+          python3 .github/scripts/auto_bump_grafana.py
 
-      - name: Create Pull Request
+      ######################################################################
+      # CREATE PULL REQUEST
+      ######################################################################
+      - name: 🔀 Create Pull Request
         if: steps.bump.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v8
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
         with:
           base: testing
-          branch: chore/bump-grafana-v${{ steps.bump.outputs.new_version }}
+          branch: bump-grafana-v${{ steps.bump.outputs.new_version }}
           commit-message: |
-            chore(grafana): bump to v${{ steps.bump.outputs.new_version }} (~ynh1)
-          title: "chore: bump Grafana to v${{ steps.bump.outputs.new_version }} (base: testing)"
+            Bump to v${{ steps.bump.outputs.new_version }} (~ynh1)
+          title: "Bump Grafana to v${{ steps.bump.outputs.new_version }} (base: testing)"
           body: |
             Automated bump detected a new Grafana OSS release.
 
@@ -63,8 +69,18 @@ jobs:
             - arm64.url: `${{ steps.bump.outputs.arm64_url }}`  
               sha256: `${{ steps.bump.outputs.arm64_sha256 }}`
 
-            _This PR was created by the daily auto-bump workflow (base: testing)._
+            _This PR was created by the daily auto-bump workflow._
           delete-branch: true
           labels: |
             autoupdate
             grafana
+
+      ######################################################################
+      # COMMENT: !testme
+      ######################################################################
+      - name: 💬 Comment !testme
+        if: ${{ steps.cpr.outputs.pull-request-number }}
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ steps.cpr.outputs.pull-request-number }}
+          body: "!testme"
