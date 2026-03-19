@@ -41,35 +41,19 @@ ram.runtime = "200M"
 	default = "visitors"
 
 [resources]
+
 	[resources.sources]
 
-		[resources.sources.main]
-		amd64.url = "https://dl.grafana.com/grafana/release/12.4.1/grafana_12.4.1_22846628243_linux_amd64.tar.gz"
-		amd64.sha256 = "55d6d71c813dd7426fe0b8d3a237e8d4ee4bf8a806ff90494207e146473ceb41"
-		prefetch = false
-		format = "tar.gz"
-		in_subdir = true
-		extract = true
-		rename = "grafana"
-
-		# needs https://github.com/YunoHost/apps_tools/pull/50
-		# autoupdate.strategy = "latest_webpage_link"
-		# autoupdate.upstream = "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&platform=linux"
-		# autoupdate.version_regex = "^https:\\/\\/dl.grafana.com\\/grafana\\/release\\/(\\d+.\\d+.\\d+)\\/grafana_\\1_\\d+_linux_amd64.tar.gz"
-
-		[resources.sources.arm64]
-		arm64.url = "https://dl.grafana.com/grafana/release/12.4.1/grafana_12.4.1_22846628243_linux_arm64.tar.gz"
-		arm64.sha256 = "7338a20b4757e5e37a25fb42855828f7627bc830c293d77da1cf6279103044ac"
-		prefetch = false
-		format = "tar.gz"
-		in_subdir = true
-		extract = true
-		rename = "grafana"
-
-		# needs https://github.com/YunoHost/apps_tools/pull/50
-		# autoupdate.strategy = "latest_webpage_link"
-		# autoupdate.upstream = "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&platform=arm"
-		# autoupdate.version_regex = "^https:\\/\\/dl.grafana.com\\/grafana\\/release\\/(\\d+.\\d+.\\d+)\\/grafana_\\1_\\d+_linux_arm64.tar.gz"
+	[resources.sources.main]
+	amd64.url = "https://dl.grafana.com/grafana/release/12.4.1/grafana_12.4.1_22846628243_linux_amd64.tar.gz"
+	amd64.sha256 = "55d6d71c813dd7426fe0b8d3a237e8d4ee4bf8a806ff90494207e146473ceb41"
+	arm64.url = "https://dl.grafana.com/grafana/release/12.4.1/grafana_12.4.1_22846628243_linux_arm64.tar.gz"
+	arm64.sha256 = "7338a20b4757e5e37a25fb42855828f7627bc830c293d77da1cf6279103044ac"
+	prefetch = false
+	format = "tar.gz"
+	in_subdir = true
+	extract = true
+	rename = "grafana"
 
 	[resources.system_user]
 	allow_email = true
