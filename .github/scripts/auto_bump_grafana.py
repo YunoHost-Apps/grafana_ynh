@@ -20,9 +20,9 @@ ARM64_PAGE  = "https://grafana.com/grafana/download?edition=oss&pg=oss-graf&plat
 UA = "Mozilla/5.0 (X11; Linux x86_64) AutoBumpGrafana/1.0"
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# GHA helpers
-# ──────────────────────────────────────────────────────────────────────────────
+##########################################################################
+# GitHub Actions helpers
+##########################################################################
 
 def gha_output(key: str, value: str) -> None:
     """Append a key=value pair to the GitHub Actions output file."""
@@ -51,9 +51,9 @@ def gha_notice(msg: str) -> None:
     print(f"::notice::{msg}")
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# HTTP
-# ──────────────────────────────────────────────────────────────────────────────
+##########################################################################
+# Fetch HTTP
+##########################################################################
 
 def fetch(url: str) -> str:
     """
@@ -70,9 +70,9 @@ def fetch(url: str) -> str:
     return r.text   # do NOT call html.unescape()
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+##########################################################################
 # Asset extraction
-# ──────────────────────────────────────────────────────────────────────────────
+##########################################################################
 
 def _normalize_url(u: str) -> str:
     """Decode \\u002F-escaped slashes from the Grafana JSON."""
@@ -112,9 +112,9 @@ def extract_asset(raw_html: str, arch: str) -> dict:
     return {"url": url, "sha256": sha_m.group(1).lower(), "version": version}
 
 
-# ──────────────────────────────────────────────────────────────────────────────
+##########################################################################
 # Manifest helpers
-# ──────────────────────────────────────────────────────────────────────────────
+##########################################################################
 
 def read_manifest_version(path: Path) -> Optional[str]:
     try:
@@ -148,9 +148,9 @@ def update_manifest(path: Path, version: str, amd64: dict, arm64: dict) -> None:
     path.write_text(tomlkit.dumps(doc), encoding="utf-8")
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Entry point
-# ──────────────────────────────────────────────────────────────────────────────
+##########################################################################
+# Main
+##########################################################################
 
 def main() -> None:
     manifest_path = Path(os.environ.get("MANIFEST", "manifest.toml")).resolve()
@@ -198,7 +198,7 @@ def main() -> None:
 
     if not bump_needed:
         gha_output("changed", "false")
-        print(f"No update needed (current={current}, upstream={new_ver}).")
+        gha_notice(f"⚠️⚠️⚠️ No update needed (current={current}, upstream={new_ver}) ⚠️⚠️⚠️")
         return
 
     # 7. Emit GHA outputs BEFORE writing the manifest
@@ -216,7 +216,7 @@ def main() -> None:
         gha_error(f"Failed to update manifest: {exc}")
         sys.exit(1)
 
-    print(f"Bumped Grafana to {new_ver}~ynh1")
+    gha_notice(f"🔵🔵🔵 Bumped Grafana to {new_ver}~ynh1 🔵🔵🔵")
 
 
 if __name__ == "__main__":
