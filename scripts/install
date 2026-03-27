@@ -12,13 +12,7 @@ source /usr/share/yunohost/helpers
 ynh_script_progression "Setting up source files..."
 
 mkdir "$install_dir/source"
-if [[ $YNH_ARCH == "amd64" ]]
-then
-	ynh_setup_source --source_id="main" --dest_dir="$install_dir/source"
-elif [[ $YNH_ARCH == "arm64" ]]
-then
-	ynh_setup_source --source_id="arm64" --dest_dir="$install_dir/source"
-fi
+ynh_setup_source --dest_dir="$install_dir/source"
 
 #=================================================
 # APP INITIAL CONFIGURATION
