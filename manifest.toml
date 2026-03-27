@@ -49,10 +49,6 @@ ram.runtime = "200M"
 	amd64.sha256 = "f240b200a803bf64592fae645331750c2681df5f07496743d714db12393a591f"
 	arm64.url = "https://dl.grafana.com/grafana/release/12.4.2/grafana_12.4.2_23531306697_linux_arm64.tar.gz"
 	arm64.sha256 = "28f37f0952e923e90aed02c7d71cef7443705a9a37ba5439b76d7f72aeb1a63f"
-	prefetch = false
-	format = "tar.gz"
-	in_subdir = true
-	extract = true
 	rename = "grafana"
 
 	[resources.system_user]
