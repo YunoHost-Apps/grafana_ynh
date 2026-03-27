@@ -5,7 +5,7 @@ name = "Grafana"
 description.en = "Metric & analytic dashboards for monitoring"
 description.fr = "Tableaux de bord de supervision"
 
-version = "12.4.1~ynh1"
+version = "12.4.2~ynh1"
 
 maintainers = ["JimboJoe","ewilly"]
 
@@ -45,10 +45,10 @@ ram.runtime = "200M"
 	[resources.sources]
 
 	[resources.sources.main]
-	amd64.url = "https://dl.grafana.com/grafana/release/12.4.1/grafana_12.4.1_22846628243_linux_amd64.tar.gz"
-	amd64.sha256 = "55d6d71c813dd7426fe0b8d3a237e8d4ee4bf8a806ff90494207e146473ceb41"
-	arm64.url = "https://dl.grafana.com/grafana/release/12.4.1/grafana_12.4.1_22846628243_linux_arm64.tar.gz"
-	arm64.sha256 = "7338a20b4757e5e37a25fb42855828f7627bc830c293d77da1cf6279103044ac"
+	amd64.url = "https://dl.grafana.com/grafana/release/12.4.2/grafana_12.4.2_23531306697_linux_amd64.tar.gz"
+	amd64.sha256 = "f240b200a803bf64592fae645331750c2681df5f07496743d714db12393a591f"
+	arm64.url = "https://dl.grafana.com/grafana/release/12.4.2/grafana_12.4.2_23531306697_linux_arm64.tar.gz"
+	arm64.sha256 = "28f37f0952e923e90aed02c7d71cef7443705a9a37ba5439b76d7f72aeb1a63f"
 	prefetch = false
 	format = "tar.gz"
 	in_subdir = true
