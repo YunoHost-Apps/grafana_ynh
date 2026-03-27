@@ -40,13 +40,7 @@ ynh_systemctl --action=stop
 #=================================================
 ynh_script_progression "Upgrading source files..."
 
-if [[ $YNH_ARCH == "amd64" ]]
-then
-	ynh_setup_source --source_id="main" --dest_dir="$install_dir/source" --full_replace
-elif [[ $YNH_ARCH == "arm64" ]]
-then
-	ynh_setup_source --source_id="arm64" --dest_dir="$install_dir/source" --full_replace
-fi
+ynh_setup_source --dest_dir="$install_dir/source" --full_replace=1
 
 #=================================================
 # UPDATE A CONFIG FILE
