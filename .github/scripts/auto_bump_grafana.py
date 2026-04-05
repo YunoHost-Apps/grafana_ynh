@@ -79,37 +79,43 @@ def _normalize_url(u: str) -> str:
     return u.replace("\\u002F", "/").replace("\\/", "/")
 
 
-def extract_asset(raw_html: str, arch: str) -> dict:
+def extract_asset_from_download_page(raw_html: str, arch: str) -> dict:
     """
-    Extract URL + sha256 for linux_<arch>.tar.gz from the raw page.
+    Extract url + sha256 + version for linux_<arch>.tar.gz
+    from embedded escaped JSON in Grafana download page.
+    """
 
-    The URL is searched in its \\u002F-escaped form so that url and sha256
-    remain ~30 chars apart in the raw JSON fragment.
-    """
-    url_pattern = re.compile(
-        r'https:\\u002F\\u002Fdl\.grafana\.com\\u002Fgrafana\\u002Frelease\\u002F'
-        r'[^"]+linux_' + arch + r'\.tar\.gz',
-        re.IGNORECASE,
+    # Grafana embeds JSON with escaped quotes -> normalize first
+    text = raw_html.replace('\\"', '"')
+
+    url_re = re.compile(
+        rf'"url"\s*:\s*"(?P<url>'
+        rf'https://dl\.grafana\.com/grafana/release/(?P<version>[^/]+)/'
+        rf'grafana_[^"]+_linux_{arch}\.tar\.gz)"'
     )
 
-    m = url_pattern.search(raw_html)
-    if not m:
-        raise RuntimeError(f"Could not find linux_{arch}.tar.gz URL in page")
+    match = url_re.search(text)
+    if not match:
+        raise RuntimeError(f"linux_{arch} tar.gz URL not found")
 
-    url = _normalize_url(m.group(0))
+    url = match.group("url")
+    version = match.group("version")
 
-    mver = re.search(r'/release/([^/]+)/', url)
-    if not mver:
-        raise RuntimeError("Unable to extract version from URL: " + url)
-    version = mver.group(1)
+    # sha256 is located AFTER the url in the same JSON object
+    window = text[match.end(): match.end() + 800]
 
-    # sha256 sits ~30 chars after the URL end in the raw JSON — use a tight window
-    vicinity = raw_html[max(0, m.start() - 100): m.end() + 200]
-    sha_m = re.search(r'"sha256"\s*:\s*"([0-9a-fA-F]{64})"', vicinity)
-    if not sha_m:
-        raise RuntimeError(f"sha256 not found near linux_{arch} URL")
+    sha_match = re.search(
+        r'"sha256"\s*:\s*"([0-9a-fA-F]{64})"',
+        window,
+    )
+    if not sha_match:
+        raise RuntimeError(f"sha256 not found for linux_{arch}")
 
-    return {"url": url, "sha256": sha_m.group(1).lower(), "version": version}
+    return {
+        "url": url,
+        "sha256": sha_match.group(1).lower(),
+        "version": version,
+    }
 
 
 ##########################################################################
