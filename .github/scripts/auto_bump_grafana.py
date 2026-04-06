@@ -177,8 +177,8 @@ def main() -> None:
 
     # 3. Extract assets
     try:
-        amd = extract_asset(amd_html, "amd64")
-        arm = extract_asset(arm_html, "arm64")
+        amd = extract_asset_from_download_page(amd_html, "amd64")
+        arm = extract_asset_from_download_page(arm_html, "arm64")
     except RuntimeError as exc:
         gha_error(str(exc))
         sys.exit(1)
