@@ -7,4 +7,5 @@ test_format = 1.0
 	# -------------------------------
 
 	#test_upgrade_from.9e7c0e5e6a73bf53c452c7c90499c039c3fd76f5.name = "Upgrade from 10.2.3~ynh2"
-	test_upgrade_from.e78961a085870102caaad717f5f5b461df96d5e7.name = "Upgrade from 12.3.3~ynh1"
+	#test_upgrade_from.e78961a085870102caaad717f5f5b461df96d5e7.name = "Upgrade from 12.3.3~ynh1"
+	test_upgrade_from.8662149cc923a80b903c8c53f56971fdf2ace6ab.name = "Upgrade from 12.4.2~ynh2"
