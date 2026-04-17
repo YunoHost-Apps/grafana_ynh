@@ -5,7 +5,7 @@ name = "Grafana"
 description.en = "Metric & analytic dashboards for monitoring"
 description.fr = "Tableaux de bord de supervision"
 
-version = "13.0.0~ynh1"
+version = "13.0.1~ynh1"
 
 maintainers = ["JimboJoe","ewilly"]
 
@@ -45,10 +45,10 @@ ram.runtime = "200M"
 	[resources.sources]
 
 	[resources.sources.main]
-	amd64.url = "https://dl.grafana.com/grafana/release/13.0.0/grafana_13.0.0_24384745231_linux_amd64.tar.gz"
-	amd64.sha256 = "3444cfe481d0dac25c875d7ca8ffb0d7a6977be7b1e8d17baaded6ae3fd478ee"
-	arm64.url = "https://dl.grafana.com/grafana/release/13.0.0/grafana_13.0.0_24384745231_linux_arm64.tar.gz"
-	arm64.sha256 = "05e49a40acc06d1345e0f8cfbe8ba9fe7c63911bac63b8efc8de2958823d574e"
+	amd64.url = "https://dl.grafana.com/grafana/release/13.0.1/grafana_13.0.1_24542347077_linux_amd64.tar.gz"
+	amd64.sha256 = "187ddc4badb69aecb7cd3fae2884add7ed21adde7124a6f8093b7b4033d722f2"
+	arm64.url = "https://dl.grafana.com/grafana/release/13.0.1/grafana_13.0.1_24542347077_linux_arm64.tar.gz"
+	arm64.sha256 = "553d5ee3fb1600c83ef2fbf336579ed6cc64fffc328843ea7d662f85b876c261"
 	rename = "grafana"
 
 	[resources.system_user]
