@@ -12,7 +12,7 @@ source /usr/share/yunohost/helpers
 ynh_script_progression "Setting up source files..."
 
 mkdir "$install_dir/source"
-ynh_setup_source --dest_dir="$install_dir/source"
+ynh_setup_source --dest_dir="$install_dir/source" --source_id="standalone"
 
 #=================================================
 # APP INITIAL CONFIGURATION

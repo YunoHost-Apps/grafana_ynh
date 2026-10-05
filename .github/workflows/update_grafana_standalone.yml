@@ -1,0 +1,53 @@
+name: Update Grafana standalone URLs and checksums
+
+on:
+  create:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: grafana-standalone-${{ github.event.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-manifest:
+    name: Update manifest.toml
+    if: >-
+      github.event.ref_type == 'branch' &&
+      startsWith(github.event.ref, 'ci-auto-update-')
+    runs-on: ubuntu-latest
+
+    env:
+      BRANCH_NAME: ${{ github.event.ref }}
+
+    steps:
+      - name: Checkout the newly created branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.ref }}
+          fetch-depth: 0
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --disable-pip-version-check --no-input requests tomlkit
+
+      - name: Update standalone URLs and checksums
+        run: python3 workflows/update_grafana_standalone.py
+
+      - name: Show manifest diff
+        run: git diff -- manifest.toml
+
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          if git diff --quiet -- manifest.toml; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "yunohost-bot"
+          git config user.email "yunohost-bot@users.noreply.github.com"
+
+          git add manifest.toml
+          git commit -m "chore: update Grafana standalone URLs and checksums"
+          git push origin "HEAD:${BRANCH_NAME}"

@@ -45,12 +45,21 @@ ram.runtime = "200M"
 	[resources.sources]
 
 	[resources.sources.main]
+	# Just used for autoupdate alert
+	amd64.url = "https://github.com/grafana/grafana/releases/download/v13.2.3/grafana_13.2.3_36482603486_linux_amd64.deb"
+	amd64.sha256 = "55ec511999f9c56f3c26b633d0dc31b750c77a682a5ef379edf0d3fe634a7a2f"
+
+	autoupdate.strategy = "latest_github_release"
+	autoupdate.asset.amd64 = "^grafana_.*_linux_amd64.deb$"
+
+	[resources.sources.standalone]
 	amd64.url = "https://dl.grafana.com/grafana/release/13.2.3/grafana_13.2.3_36482603486_linux_amd64.tar.gz"
 	amd64.sha256 = "6107ad27016296aac38e0d7ffa8753ab540b5541ad27e94790f771289d733235"
 	arm64.url = "https://dl.grafana.com/grafana/release/13.2.3/grafana_13.2.3_36482603486_linux_arm64.tar.gz"
 	arm64.sha256 = "a2a41b960ba4c25e83140484e48813730d3c81891a128439a2a9d2df6eb3840e"
 	armhf.url = "https://dl.grafana.com/grafana/release/13.2.3/grafana_13.2.3_36482603486_linux_arm-7.tar.gz"
 	armhf.sha256 = "b3d09225ff19e2504343d5f016c31e4f8159565d15186a01581983d33c518120"
+
 	rename = "grafana"
 
 	[resources.system_user]

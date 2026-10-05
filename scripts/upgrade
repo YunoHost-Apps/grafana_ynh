@@ -40,7 +40,7 @@ ynh_systemctl --action=stop
 #=================================================
 ynh_script_progression "Upgrading source files..."
 
-ynh_setup_source --dest_dir="$install_dir/source" --full_replace
+ynh_setup_source --dest_dir="$install_dir/source" --source_id="standalone" --full_replace
 
 #=================================================
 # UPDATE A CONFIG FILE
