@@ -53,12 +53,12 @@ ram.runtime = "200M"
 	autoupdate.asset.amd64 = "^grafana_.*_linux_amd64.deb$"
 
 	[resources.sources.standalone]
-	amd64.url = "https://dl.grafana.com/grafana/release/13.2.3/grafana_13.2.3_36482603486_linux_amd64.tar.gz"
-	amd64.sha256 = "6107ad27016296aac38e0d7ffa8753ab540b5541ad27e94790f771289d733235"
-	arm64.url = "https://dl.grafana.com/grafana/release/13.2.3/grafana_13.2.3_36482603486_linux_arm64.tar.gz"
-	arm64.sha256 = "a2a41b960ba4c25e83140484e48813730d3c81891a128439a2a9d2df6eb3840e"
-	armhf.url = "https://dl.grafana.com/grafana/release/13.2.3/grafana_13.2.3_36482603486_linux_arm-7.tar.gz"
-	armhf.sha256 = "b3d09225ff19e2504343d5f016c31e4f8159565d15186a01581983d33c518120"
+	amd64.url = "https://dl.grafana.com/grafana/release/13.2.4/grafana_13.2.4_38252365904_linux_amd64.tar.gz"
+	amd64.sha256 = "c48765988fd88572607e4ea670251af8a8e64ab3e360d0f3cf67a6f3587b92ab"
+	arm64.url = "https://dl.grafana.com/grafana/release/13.2.4/grafana_13.2.4_38252365904_linux_arm64.tar.gz"
+	arm64.sha256 = "9517a0d21e2706b54521fbd720803698bba42859ca179e9905cc6b8fb05d67ab"
+	armhf.url = "https://dl.grafana.com/grafana/release/13.2.4/grafana_13.2.4_38252365904_linux_arm-7.tar.gz"
+	armhf.sha256 = "e157812666d3a275f43452c83eefd8d0a5bf9c067275e8a7a7d5b0b579d169cb"
 
 	rename = "grafana"
 
