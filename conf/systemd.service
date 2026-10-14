@@ -15,6 +15,8 @@ WorkingDirectory=__INSTALL_DIR__/source
 RuntimeDirectory=__APP__
 RuntimeDirectoryMode=0750
 ExecStartPre=__INSTALL_DIR__/source/bin/grafana cli \
+  --homepath ${GRAFANA_HOME}                        \
+  --config ${CONF_FILE}                             \
   --pluginsDir ${PLUGINS_DIR}                       \
   plugins update-all
 ExecStart=__INSTALL_DIR__/source/bin/grafana server \

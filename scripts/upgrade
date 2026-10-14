@@ -76,9 +76,6 @@ ynh_script_progression "Starting $app's migrations and plugins updates..."
 # Start the service and execute embeded migrations if needed
 ynh_systemctl --action=start --wait_until="HTTP Server Listen" --log_path="/var/log/$app/$app.log"
 
-# Update Grafana plugins
-ynh_hide_warnings ynh_exec_as_app "$install_dir/source/bin/grafana" cli plugins update-all
-
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
