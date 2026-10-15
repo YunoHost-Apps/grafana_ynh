@@ -5,7 +5,7 @@ name = "Grafana"
 description.en = "Metric & analytic dashboards for monitoring"
 description.fr = "Tableaux de bord de supervision"
 
-version = "13.2.4~ynh1"
+version = "13.2.4~ynh2"
 
 maintainers = ["JimboJoe","ewilly"]
 
@@ -46,11 +46,11 @@ ram.runtime = "200M"
 
 	[resources.sources.main]
 	# Just used for autoupdate alert
-	amd64.url = "https://github.com/grafana/grafana/releases/download/v13.2.4/grafana_13.2.4_38252365904_linux_amd64.deb"
-	amd64.sha256 = "f32ba4e166e35a376f39cbeb8dd47c57f7bf608b09339cb41adf6d39082af3c5"
+	url = "https://github.com/grafana/grafana/releases/download/v13.2.4/grafana_13.2.4_38252365904_linux_arm64.rpm"
+	sha256 = "1c100c89dc2631a405b9763a88ec3ee8bb223a6f81fa62de5e85c4cdc185983b"
 
 	autoupdate.strategy = "latest_github_release"
-	autoupdate.asset.amd64 = "^grafana_.*_linux_amd64.deb$"
+	autoupdate.asset = "^grafana_.*_linux_arm64.rpm$"
 
 	[resources.sources.standalone]
 	amd64.url = "https://dl.grafana.com/grafana/release/13.2.4/grafana_13.2.4_38252365904_linux_amd64.tar.gz"

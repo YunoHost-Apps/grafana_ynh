@@ -29,18 +29,18 @@ GITHUB_RELEASE_PREFIX = ("https://github.com/grafana/grafana/releases/download/v
 # Functions customizable by app maintainer
 
 
-def extract_release_fragment(main_amd64_url: str) -> str:
-    """Extract '<version>/grafana_<version>_<build>' from main.amd64.url."""
+def extract_release_fragment(main_url: str) -> str:
+    """Extract '<version>/grafana_<version>_<build>' from main.url."""
     pattern = re.compile(
         re.escape(GITHUB_RELEASE_PREFIX)
         + r"(?P<fragment>[^\"']+?)_linux"
     )
 
-    match = pattern.search(main_amd64_url)
+    match = pattern.search(main_url)
     if match is None:
         raise ValueError(
             "Unable to extract the Grafana release fragment from "
-            f"{main_amd64_url}"
+            f"{main_url}"
         )
 
     return match.group("fragment")
@@ -107,8 +107,8 @@ def main() -> None:
     main_source = sources["main"]
     standalone_source = sources["standalone"]
 
-    main_amd64_url = as_string(main_source["amd64"]["url"])
-    release_fragment = extract_release_fragment(main_amd64_url)
+    main_url = as_string(main_source["url"])
+    release_fragment = extract_release_fragment(main_url)
     logger.info("Grafana release fragment: %s", release_fragment)
 
     for architecture in ARCHITECTURES:
