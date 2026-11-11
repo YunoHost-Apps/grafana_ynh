@@ -5,7 +5,7 @@ name = "Grafana"
 description.en = "Metric & analytic dashboards for monitoring"
 description.fr = "Tableaux de bord de supervision"
 
-version = "13.3.0~ynh1"
+version = "13.3.1~ynh1"
 
 maintainers = ["ewilly"]
 
@@ -46,19 +46,19 @@ ram.runtime = "200M"
 
 	[resources.sources.main]
 	# Just used for autoupdate alert
-	url = "https://github.com/grafana/grafana/releases/download/v13.3.0/grafana_13.3.0_40412481033_linux_arm64.rpm"
-	sha256 = "086e5a3f00f37f88f0ded594e50311b861ce92161ead20a5bf5754940d3f53ff"
+	url = "https://github.com/grafana/grafana/releases/download/v13.3.1/grafana_13.3.1_42849527790_linux_arm64.rpm"
+	sha256 = "ea438041cbab09308416fd2156d8affd224b2c8999360545b39210efd1dee4f7"
 
 	autoupdate.strategy = "latest_github_release"
 	autoupdate.asset = "^grafana_.*_linux_arm64.rpm$"
 
 	[resources.sources.standalone]
-	amd64.url = "https://dl.grafana.com/grafana/release/13.3.0/grafana_13.3.0_40412481033_linux_amd64.tar.gz"
-	amd64.sha256 = "cec8f98cc59bc1a1945833b652371a073be678c5c159a9b1695ad63c04fae5a7"
-	arm64.url = "https://dl.grafana.com/grafana/release/13.3.0/grafana_13.3.0_40412481033_linux_arm64.tar.gz"
-	arm64.sha256 = "07015a0c34a8cfad8b3548984a86a7afe689e1929f5f77d9ae8f7636429e67fe"
-	armhf.url = "https://dl.grafana.com/grafana/release/13.3.0/grafana_13.3.0_40412481033_linux_arm-7.tar.gz"
-	armhf.sha256 = "405718a96fa8ec7f927c5845b5aacf73dccb5606cef35655c1e50e5c47b71c1d"
+	amd64.url = "https://dl.grafana.com/grafana/release/13.3.1/grafana_13.3.1_42849527790_linux_amd64.tar.gz"
+	amd64.sha256 = "6acf8939dd2f73332cbcafc27a33973fb1115b8867e7ffa3223c6e2ecbed8531"
+	arm64.url = "https://dl.grafana.com/grafana/release/13.3.1/grafana_13.3.1_42849527790_linux_arm64.tar.gz"
+	arm64.sha256 = "a96fa3dfe94eebb036e53bb4c9c19a9b35bb19fb42f788baf17000f8b6972b33"
+	armhf.url = "https://dl.grafana.com/grafana/release/13.3.1/grafana_13.3.1_42849527790_linux_arm-7.tar.gz"
+	armhf.sha256 = "889d240c242195209b419498a0e4d54272645238c4582fe2b240419b97e42e06"
 
 	rename = "grafana"
 
