@@ -47,7 +47,7 @@ ram.runtime = "200M"
 	[resources.sources.main]
 	# Just used for autoupdate alert
 	url = "https://github.com/grafana/grafana/releases/download/v13.3.1/grafana_13.3.1_42849527790_linux_arm64.rpm"
-	sha256 = "ea438041cbab09308416fd2156d8affd224b2c8999360545b39210efd1dee4f7"
+	sha256 = "05ab0727686e44522d10f604f534b64a85ebf834cd7d6246ac016c6b1cefd1e1"
 
 	autoupdate.strategy = "latest_github_release"
 	autoupdate.asset = "^grafana_.*_linux_arm64.rpm$"
